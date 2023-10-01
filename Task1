@@ -1,0 +1,17 @@
+def task1(x, n, b):
+    result = 0
+    if b == True:
+        x_value = []
+        for i in range(len(x)):
+            value = x[i] ** n
+            x_value.append(value)
+        result = sum(x_value)
+        
+    else:
+        x_value = []
+        for i in range(len(x)):
+            value = x[i] ** (2*n)
+            x_value.append(value)
+        result = sum(x_value)
+    
+    return result
