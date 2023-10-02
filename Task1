@@ -15,3 +15,17 @@ def task1(x, n, b):
         result = sum(x_value)
     
     return result
+
+def task2(m, n):
+    
+    """
+    very inefficient way, could probably do the last 3 lines in a single line
+    """
+    
+    zero_array      = np.zeros(m)
+    array_1         = np.arange(1, n+1)
+    list_random     = [random.uniform(0, 1) for _ in range(m * n) ]
+    array_random    = np.array(list_random)
+    array_2         = array_random.reshape((m, n))
+    
+    return zero_array, array_1, array_2
