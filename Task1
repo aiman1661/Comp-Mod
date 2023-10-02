@@ -1,3 +1,7 @@
+import numpy as np
+import random
+from numpy import linalg as LA       #used for task3b
+
 def task1(x, n, b):
     result = 0
     if b == True:
@@ -15,6 +19,7 @@ def task1(x, n, b):
         result = sum(x_value)
     
     return result
+# Write the functions for the other tasks below
 
 def task2(m, n):
     
@@ -29,3 +34,41 @@ def task2(m, n):
     array_2         = array_random.reshape((m, n))
     
     return zero_array, array_1, array_2
+    
+    
+# def task2(m, n):
+  
+#     """
+#     """
+    
+#     zero_array      = np.zeros(m)
+#     array_1         = np.arange(1, n+1)
+#     array_2         = np.array([[random.uniform(0, 1) for _ in range(m)] for _ in range(n)])
+    
+#     return zero_array, array_1, array_2
+
+def task3a(a, b, t):
+    result = 2 * t * (a + b)
+    return result
+
+def task3b(x, y):
+    difference = x - y
+    distance   = LA.norm(difference)
+    return distance
+
+def task4a(v1, v2):
+    lhs = np.cross(v1, v2)
+    rhs = - np.cross(v2, v1)
+    return lhs, rhs
+
+def task4b(v1, v2, v3):
+    lhs = np.cross(v1, v2 + v3)
+    rhs = (np.cross(v1, v2)) + (np.cross(v1, v3))
+    return lhs, rhs
+
+def task4c(v1, v2, v3):
+    lhs = np.cross(v1, np.cross(v2, v3))    
+    rhs = v2 * np.dot(v1, v3) - v3 * np.dot(v1, v2)
+    return lhs, rhs
+
+def task5(x1, x2, m1, m2):
