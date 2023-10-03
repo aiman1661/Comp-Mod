@@ -83,7 +83,7 @@ def task5(x1, x2, m1, m2):
     F_12, GPE.
     """
     G        = 6.6743e-11
-    r_vector = x1 - x2                       #calculation of vector between x1, x2
+    r_vector = x2 - x1                    #calculation of vector between x1, x2
     r_mod    = LA.norm(r_vector)             #calculation of norm of vector
     
     F_12     = -((G * m1 * m2) / (r_mod ** 2)) * (r_vector / r_mod) #force vector
@@ -91,3 +91,4 @@ def task5(x1, x2, m1, m2):
     gpe      = (G * m1 * m2) / (r_mod)              #gravitational potential energy
     
     return F_12, gpe
+    
