@@ -92,3 +92,11 @@ def task5(x1, x2, m1, m2):
     
     return F_12, gpe
     
+def task6a(n):
+    M_list = []
+    for i in range(n):
+        for j in range(n):
+            M_ij = i + 2 * j
+            M_ij_list = M_list.append(M_ij)
+            M_array = np.array(M_ij_list).reshape(n, n)
+    return M_array
