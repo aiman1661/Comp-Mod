@@ -1,3 +1,9 @@
+"""
+Code for Exercise 1
+
+Name: AIMAN MOHD YUZMANIZEIL
+Number: S2229553
+"""
 import numpy as np
 import random
 from numpy import linalg as LA       #used for task3b
@@ -34,18 +40,6 @@ def task2(m, n):
     array_2         = array_random.reshape((m, n))
     
     return zero_array, array_1, array_2
-    
-    
-# def task2(m, n):
-  
-#     """
-#     """
-    
-#     zero_array      = np.zeros(m)
-#     array_1         = np.arange(1, n+1)
-#     array_2         = np.array([[random.uniform(0, 1) for _ in range(m)] for _ in range(n)])
-    
-#     return zero_array, array_1, array_2
 
 def task3a(a, b, t):
     result = 2 * t * (a + b)
@@ -72,3 +66,28 @@ def task4c(v1, v2, v3):
     return lhs, rhs
 
 def task5(x1, x2, m1, m2):
+    """
+    Parameters
+    ----------
+    x1 : ARRAY
+        VECTOR.
+    x2 : ARRAY
+        VECTOR.
+    m1 : CONSTANT
+        FLOAT.
+    m2 : CONSTANT
+        FLOAT.
+
+    Returns
+    -------
+    F_12, GPE.
+    """
+    G        = 6.6743e-11
+    r_vector = x1 - x2                       #calculation of vector between x1, x2
+    r_mod    = LA.norm(r_vector)             #calculation of norm of vector
+    
+    F_12     = -((G * m1 * m2) / (r_mod ** 2)) * (r_vector / r_mod) #force vector
+    
+    gpe      = (G * m1 * m2) / (r_mod)              #gravitational potential energy
+    
+    return F_12, gpe
