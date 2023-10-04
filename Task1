@@ -100,3 +100,8 @@ def task6a(n):
             M_list.append(M_ij)
     M_array = np.array(M_list).reshape(n, n)
     return M_array
+
+def task6b(n):
+    M_array     = task6a(n)
+    sum_array   = np.sum(M_array, axis=1)
+    return sum_array
