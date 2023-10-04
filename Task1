@@ -97,6 +97,6 @@ def task6a(n):
     for i in range(n):
         for j in range(n):
             M_ij = i + 2 * j
-            M_ij_list = M_list.append(M_ij)
-            M_array = np.array(M_ij_list).reshape(n, n)
+            M_list.append(M_ij)
+    M_array = np.array(M_list).reshape(n, n)
     return M_array
