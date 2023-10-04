@@ -6,7 +6,6 @@ Number: S2229553
 """
 import numpy as np
 import random
-from numpy import linalg as LA       #used for task3b
 
 def task1(x, n, b):
     result = 0
@@ -15,7 +14,7 @@ def task1(x, n, b):
         for i in range(len(x)):
             value = x[i] ** n
             x_value.append(value)
-        result = sum(x_value)
+        result = sum(x_value)               #sum taken at this indent so that it can be summed over all elements of the list
         
     else:
         x_value = []
@@ -25,19 +24,18 @@ def task1(x, n, b):
         result = sum(x_value)
     
     return result
-# Write the functions for the other tasks below
 
 def task2(m, n):
     
     """
-    very inefficient way, could probably do the last 3 lines in a single line
+    very inefficient method, could probably do the last 3 lines in a single line,, just need to figure that out
     """
     
     zero_array      = np.zeros(m)
     array_1         = np.arange(1, n+1)
-    list_random     = [random.uniform(0, 1) for _ in range(m * n) ]
-    array_random    = np.array(list_random)
-    array_2         = array_random.reshape((m, n))
+    list_random     = [random.uniform(0, 1) for _ in range(m * n) ] #make list of random elements
+    array_random    = np.array(list_random)                         #convert list to array
+    array_2         = array_random.reshape((m, n))                  #reshape array to required shape
     
     return zero_array, array_1, array_2
 
@@ -47,7 +45,7 @@ def task3a(a, b, t):
 
 def task3b(x, y):
     difference = x - y
-    distance   = LA.norm(difference)
+    distance   = np.linalg.norm(difference)
     return distance
 
 def task4a(v1, v2):
@@ -84,7 +82,7 @@ def task5(x1, x2, m1, m2):
     """
     G        = 6.6743e-11
     r_vector = x2 - x1                    #calculation of vector between x1, x2
-    r_mod    = LA.norm(r_vector)             #calculation of norm of vector
+    r_mod    = np.linalg.norm(r_vector)             #calculation of norm of vector
     
     F_12     = -((G * m1 * m2) / (r_mod ** 2)) * (r_vector / r_mod) #force vector
     
