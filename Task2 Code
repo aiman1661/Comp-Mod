@@ -118,11 +118,17 @@ class Particle3D(object):
         del_pos        = dt * self.velocity + ((dt ** 2) / (2 * self.mass)) * force
         self.position += del_pos
 
-    def update_velocity(self, dt, force):
+        def update_velocity(self, dt, force):
         """
-        FILL IN YOUR DOCSTRING
+        Returns the updated velocity of the Particle3D instance
+        
+        Returns
+        -------
+        v(t+dt): ndarray
+                 v(t) + dt . (f(t) / m)
         """
-        ...
+        del_vel         = dt * (force / self.mass)
+        self.velocity  += del_vel
 
     @staticmethod
     def read_line(line):
@@ -141,8 +147,18 @@ class Particle3D(object):
         -------
         p: Particle3D
         """
-        ...
-        return  # ...
+        p_list     = []
+        input_file = open("p3d_test_data.txt", "r")
+        lines      = input_file.readline()
+        lines      = lines.strip()
+        for lines in input_file:
+            if lines.startswith("#") or lines == "":
+                continue
+            p_list.append(lines)
+        input_file.close()
+        
+        
+        return p_list
 
     @staticmethod
     def total_kinetic_energy(particles):
