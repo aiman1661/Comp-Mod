@@ -77,9 +77,10 @@ def test_momentum():
     assert hasattr(p, "momentum"), "Class has no momentum method"
     assert type(p.momentum) == types.MethodType, "momentum is not a proper method"
     P = p.momentum()
+    P_exp = np.array([-8.0, 16.0, 0])
     assert P is not None, "Momentum returned no value"
-    assert np.allclose(P, [-8.0, 16.0, 0]), f"Momentum gives wrong value, mine:{p} v0:{v0}"
-    print(P, [-8.0, 16.0, 0])
+    assert np.allclose(P, P_exp), f"Momentum gives wrong value, mine:{P} P_exp:{P_exp}"
+    print(P, P_exp)
 
 def test_position_update():
     m0 = 1.0
