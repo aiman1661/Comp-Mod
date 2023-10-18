@@ -96,7 +96,7 @@ class Particle3D(object):
 
     def update_position_1st(self, dt):
         """
-        Returns the first updated position of a Particle3D instance
+        Returns the first-order updated position of a Particle3D instance
         
         Returns
         -------
@@ -108,7 +108,7 @@ class Particle3D(object):
 
     def update_position_2nd(self, dt, force):
         """
-        Returns the first updated position of a Particle3D instance
+        Returns the second-order updated position of a Particle3D instance
         
         Returns
         -------
@@ -118,7 +118,7 @@ class Particle3D(object):
         del_pos        = dt * self.velocity + ((dt ** 2) / (2 * self.mass)) * force
         self.position += del_pos
 
-        def update_velocity(self, dt, force):
+    def update_velocity(self, dt, force):
         """
         Returns the updated velocity of the Particle3D instance
         
@@ -145,33 +145,50 @@ class Particle3D(object):
 
         Returns
         -------
-        p: Particle3D
+        particle: Particle3D
         """
-        p_list     = []
-        input_file = open("p3d_test_data.txt", "r")
-        lines      = input_file.readline()
-        lines      = lines.strip()
-        for lines in input_file:
-            if lines.startswith("#") or lines == "":
-                continue
-            p_list.append(lines)
-        input_file.close()
+        data     = line.split()
         
+        label    = str(data[0])
+        mass     = float(data[1])
+        position = np.array([float(data[2]), float(data[3]), float(data[4])])
+        velocity = np.array([float(data[5]), float(data[6]), float(data[7])])
         
-        return p_list
+        particle = Particle3D(label, mass, position, velocity)
+        return particle
 
     @staticmethod
     def total_kinetic_energy(particles):
         """
-        FILL IN YOUR DOCSTRING
+        Returns the total kinetic energy given a list of Particle3Ds
+        
+        Parameters
+        ----------
+        particles: list
+                    A list of Particle3D instances
+                    
+        Returns
+        -------
+        T_sum: ndarray
+                Total kinetic energy
         """
-        ...
-        return  # ...
+        v_p1  = particles[0].velocity
+        v_p2  = particles[1].velocity
+        v_p3  = particles[2].velocity
+        
+        T_p1  = (1/2) * particles[0].mass * np.linalg.norm(v_p1) ** 2
+        T_p2  = (1/2) * particles[1].mass * np.linalg.norm(v_p2) ** 2
+        T_p3  = (1/2) * particles[2].mass * np.linalg.norm(v_p3) ** 2
+        
+        T_sum = T_p1 + T_p2 +T_p3
+        return  T_sum
 
     @staticmethod
     def com_velocity(particles):
         """
         Computes the CoM velocity of a list of P3D's
+        
+        CoM velocity is given by sum of individual momenta divided by total mass, expect to return a vector
 
         Parameters
         ----------
@@ -183,5 +200,12 @@ class Particle3D(object):
         com_vel: array
             Centre-of-mass velocity
         """
-        ...
-        return  # ...
+        P_p1     = particles[0].mass * particles[0].velocity
+        P_p2     = particles[1].mass * particles[1].velocity
+        P_p3     = particles[2].mass * particles[2].velocity
+        
+        P_sum    = P_p1 + P_p2 + P_p3
+        mass_sum = sum(particles[i].mass for i in range(3))
+        
+        com_velocity = P_sum / mass_sum
+        return com_velocity
