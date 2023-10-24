@@ -1,0 +1,216 @@
+"""
+Symplectic Euler and Velocity Verlet time integration of
+a particle moving in a Morse potential well.
+
+Produces plots of the position of the particle
+and its energy, both as function of time. Also
+saves both to file.
+
+The potential is U(r1, r2) = D_e{[1-exp(-alpha(r12 - r_e))]^(2)-1}, where
+r_e, D_e and alpha are hard-coded in the main() method
+and passed to the functions that
+calculate force and potential energy.
+
+Author: AIMAN MOHD YUZMANIZEIL
+Number: S2229553
+
+"""
+
+import sys
+import math
+import numpy as np
+import matplotlib.pyplot as pyplot
+from particle3D import Particle3D
+
+def force_Morse(p1, p2, r_e, D_e, alpha):
+    """
+    Return the force on a particle p1 due to particle p2 in a Morse potential.
+
+    The force is given by
+        F1(r1, r2) = 2 * alpha * D_e [1 - exp(-alpha(r12 - r_e))] * exp(-alpha(r12-r_e)) r_12
+
+    Parameters
+    ----------
+    p1, p2: Particle3D
+    r_e   : float
+    D_e   : float
+    alpha : float
+
+    Returns
+    -------
+    force: ndarray
+    """
+    r_12     = p2.position - p1.position    #separation distance vector
+    mod_r_12 = np.linalg.norm(r_12)         #norm of separation distance vector
+    r_12_hat = r_12 / mod_r_12              #unit separation distance vector
+    
+    force_1 = 2 * alpha * D_e * (1 - np.exp(-alpha * (mod_r_12 - r_e))) * np.exp(-alpha * (mod_r_12 - r_e)) * r_12_hat
+    return force_1
+
+
+def potential_Morse(p1, p2, r_e, D_e, alpha):
+    """
+    Method to return potential energy 
+    of particle in Morse potential
+    U(r1, r2) = D_e * ((1 - np.exp(-alpha * (mod_r_12 - r_e))) ** 2 - 1) 
+
+    Parameters
+    -----------
+    p1, p2: Particle3D
+    r_e   : float
+    D_e   : float
+    alpha : float
+
+    Returns
+    -------
+    potential: float
+    """
+    r_12     = p2.position - p1.position    #separation distance vector
+    mod_r_12 = np.linalg.norm(r_12)     
+    
+    potential = D_e * ((1 - np.exp(-alpha * (mod_r_12 - r_e))) ** 2 - 1) 
+    return potential
+
+
+def main():
+    # Read inputs from command line
+    # The variable sys.argv contains whatever you typed on the command line
+    # or after %run on the ipython console to launch the code.  We can use
+    # it to get user inputs.
+    # Here we expect three things:
+    #    the name of this file
+    #    euler or verlet
+    #    the name of the output file the user wants to write to
+    # So we start by checking that all three are specified and quit if not,
+    # after giving the user a helpful error message.
+    if len(sys.argv) != 3 :
+        print("You left out the name of the output file when running.")
+        print("In spyder, run like this instead:")
+        print(f"    %run {sys.argv[0]} <euler or verlet> <desired output file>")
+        sys.exit(1)
+    else:
+        mode = sys.argv[1]
+        outfile_name = sys.argv[2]
+
+    # Open the output file for writing ("w")
+    outfile = open(outfile_name, "w")
+
+    # Choose our simulation parameters
+    dt      = 0.01
+    numstep = 10000
+    time    = 0.0
+    r_e     = 1.20752
+    D_e     = 5.21322
+    alpha   = 2.65374
+
+    # Set up particle initial conditions:
+    #  position x1   = (0.65661, 0, 0)
+    #  velocity v1   = (0.05, 0, 0)
+    #  position x1   = (-0.65661, 0, 0)
+    #  velocity v1   = (-0.05, 0, 0)
+    #  mass p1, p2 m = 16.0
+    mass = 16.0
+    x1   = np.array([0.65661, 0, 0])
+    x2   = np.array([-0.65661, 0, 0])
+    v1   = np.array([0.05, 0, 0])
+    v2   = np.array([-0.05, 0, 0])
+    
+    p1 = Particle3D('p1', mass, x1, v1)
+    p2 = Particle3D('p2', mass, x2, v2)
+    
+    separation = np.linalg.norm(p1.position - p2.position)
+
+
+    # Get initial force
+    force1 = force_Morse(p1, p2, r_e, D_e, alpha)        #force on p1 due to p2
+    force2 = -force_Morse(p1, p2, r_e, D_e, alpha)       #force on p2 due to p1 (N3)
+
+    # Write out starting time, position, and energy values
+    # to the output file.
+    energy = p1.kinetic_energy() + p2.kinetic_energy() + potential_Morse(p1, p2, r_e, D_e, alpha)
+    outfile.write(f"{time}  {separation}  {energy}\n")
+
+    # Initialise numpy arrays that we will plot later, to record
+    # the trajectories of the particles.
+    times = np.zeros(numstep)
+    positions = np.zeros(numstep)
+    energies = np.zeros(numstep)
+
+    # Start the time integration loop
+    for i in range(numstep):
+
+        # Update the positions and velocities.
+        # This will depend on whether we are doing an Euler or verlet integration
+        if mode == "euler":
+            # Update particle position
+            p1.update_position_1st(dt)
+            p2.update_position_1st(dt)
+            
+            # Calculate force
+            force1 = force_Morse(p1, p2, r_e, D_e, alpha)
+            force2 = -force_Morse(p1, p2, r_e, D_e, alpha)
+
+            # Update particle velocity 
+            p1.update_velocity(dt, force1)
+            p2.update_velocity(dt, force2)
+
+        elif mode == "verlet":
+            # Update particle position using previous force
+            p1.update_position_2nd(dt, force1)
+            p2.update_position_2nd(dt, force2)
+            
+            # Get the force value for the new positions
+            force1_new  = force_Morse(p1, p2, r_e, D_e, alpha)
+            force2_new  = -force_Morse(p1, p2, r_e, D_e, alpha)
+
+            # Update particle velocity by averaging
+            # current and new forces
+            p1.update_velocity(dt, 0.5*(force1+force1_new))
+            p2.update_velocity(dt, 0.5*(force2+force2_new))
+            
+            # Re-define force value for the next iteration
+            force1 = force1_new
+            force2 = force2_new
+        else:
+            raise ValueError(f"Unknown mode {mode} - should be euler or verlet")
+
+        # Increase time
+        time += dt
+        
+        # Output particle information
+        energy = p1.kinetic_energy() + p2.kinetic_energy() + potential_Morse(p1, p2, r_e, D_e, alpha)
+        outfile.write(f"{time} {separation} {energy}\n")
+
+        # Store the things we want to plot later in our arrays
+        times[i] = time
+        positions[i] = np.linalg.norm(p1.position - p2.position)
+        energies[i] = energy
+
+    # Now the simulation has finished we can close our output file
+    outfile.close()
+
+    # Plot particle trajectory to screen. There are no units
+    # here because it is an abstract simulation, but you should
+    # include units in your plot labels!
+    pyplot.figure()
+    pyplot.title('Symplectic Euler: separation distance vs time')
+    pyplot.xlabel('Time')
+    pyplot.ylabel('Separation Distance')
+    pyplot.plot(times, positions)
+    pyplot.show()
+
+    # Plot particle energy to screen
+    pyplot.figure()
+    pyplot.title('Symplectic Euler: total energy vs time')
+    pyplot.xlabel('Time')
+    pyplot.ylabel('Energy')
+    pyplot.plot(times, energies)
+    pyplot.show()
+
+
+# This strange but standard python idiom means that the main function will
+# only be run if we run this file, not if we just import it from another
+# python file. It is good practice to include it whenever your code can be
+# run as a program.
+if __name__ == "__main__":
+    main()
