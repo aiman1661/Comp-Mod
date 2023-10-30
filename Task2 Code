@@ -172,16 +172,13 @@ class Particle3D(object):
         T_sum: ndarray
                 Total kinetic energy
         """
-        v_p1  = particles[0].velocity
-        v_p2  = particles[1].velocity
-        v_p3  = particles[2].velocity
+        list_kinetic = []
+        for p in particles:
+            v = p.velocity
+            T = (1/2) * p.mass * (np.linalg.norm(v) ** 2)
+            list_kinetic.append(T)
         
-        T_p1  = (1/2) * particles[0].mass * (np.linalg.norm(v_p1) ** 2)
-        T_p2  = (1/2) * particles[1].mass * (np.linalg.norm(v_p2) ** 2)
-        T_p3  = (1/2) * particles[2].mass * (np.linalg.norm(v_p3) ** 2)
-        
-        T_sum = T_p1 + T_p2 +T_p3
-        return  T_sum
+        return  np.sum(list_kinetic)
 
     @staticmethod
     def com_velocity(particles):
@@ -200,12 +197,14 @@ class Particle3D(object):
         com_vel: array
             Centre-of-mass velocity
         """
-        P_p1     = particles[0].momentum()
-        P_p2     = particles[1].momentum()
-        P_p3     = particles[2].momentum()
+        momentum = np.zeros(3)
+        list_mass = []
         
-        P_sum    = P_p1 + P_p2 + P_p3
-        mass_sum = sum(particles[i].mass for i in range(3))
-        
-        com_velocity = P_sum / mass_sum
+        for p in particles:
+            P = p.momentum()
+            m = p.mass
+            momentum += P
+            list_mass.append(m)
+            
+        com_velocity = momentum / np.sum(list_mass)
         return com_velocity
