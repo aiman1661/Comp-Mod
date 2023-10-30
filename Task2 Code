@@ -79,7 +79,7 @@ class Particle3D(object):
         ke: float
             1/2 m v**2
         """
-        k_e = (1/2) * self.mass * (np.linalg.norm(self.velocity) ** 2)
+        k_e = (1/2) * self.mass * (np.linalg.norm(self.velocity) ** 2)     #calculation of KE
         return  k_e
 
     def momentum(self):
@@ -91,7 +91,7 @@ class Particle3D(object):
         momentum: ndarray
                   m v , expect p to be a vector
         """
-        p = self.mass * self.velocity 
+        p = self.mass * self.velocity     #calculation of momentum
         return p
 
     def update_position_1st(self, dt):
@@ -104,7 +104,7 @@ class Particle3D(object):
                  r(t) + dt . v(t) , expect to be a vector
         """
         del_pos        = dt * self.velocity
-        self.position += del_pos
+        self.position += del_pos    ##updating the original position up to 1st order correction
 
     def update_position_2nd(self, dt, force):
         """
@@ -116,7 +116,7 @@ class Particle3D(object):
                  r(t) + dt . v(t) + dt^2 * f(t) / m , expect to be a vector
         """
         del_pos        = dt * self.velocity + ((dt ** 2) / (2 * self.mass)) * force
-        self.position += del_pos
+        self.position += del_pos      #updating the original position up to 2nd order correction
 
     def update_velocity(self, dt, force):
         """
@@ -128,7 +128,7 @@ class Particle3D(object):
                  v(t) + dt . (f(t) / m)
         """
         del_vel         = dt * (force / self.mass)
-        self.velocity  += del_vel
+        self.velocity  += del_vel      #updating the original velocity
 
     @staticmethod
     def read_line(line):
@@ -147,14 +147,14 @@ class Particle3D(object):
         -------
         particle: Particle3D
         """
-        data     = line.split()
+        data     = line.split()             #to allow indexing of individual terms in a line
         
-        label    = str(data[0])
-        mass     = float(data[1])
+        label    = str(data[0])             #these 4 lines are just picking out data and setting them up as 
+        mass     = float(data[1])           #variables by picking their indices
         position = np.array([float(data[2]), float(data[3]), float(data[4])])
         velocity = np.array([float(data[5]), float(data[6]), float(data[7])])
         
-        particle = Particle3D(label, mass, position, velocity)
+        particle = Particle3D(label, mass, position, velocity)    #creating a particle using the P3D instance
         return particle
 
     @staticmethod
@@ -172,13 +172,14 @@ class Particle3D(object):
         T_sum: ndarray
                 Total kinetic energy
         """
-        list_kinetic = []
-        for p in particles:
-            v = p.velocity
-            T = (1/2) * p.mass * (np.linalg.norm(v) ** 2)
-            list_kinetic.append(T)
+        list_kinetic = []               #empty KE list
         
-        return  np.sum(list_kinetic)
+        for p in particles:             #picking out a particle p from a list in a loop
+            v = p.velocity              #setting the velocity of particle p as a variable
+            T = (1/2) * p.mass * (np.linalg.norm(v) ** 2)  #calculating the kintetic energy of a particle
+            list_kinetic.append(T)      #updating list with kinetic energy of particle p
+        
+        return  np.sum(list_kinetic)    #summing the values in the list
 
     @staticmethod
     def com_velocity(particles):
@@ -197,14 +198,14 @@ class Particle3D(object):
         com_vel: array
             Centre-of-mass velocity
         """
-        momentum = np.zeros(3)
-        list_mass = []
+        momentum = np.zeros(3)     #empty momentum array
+        list_mass = []             #empty mass list
         
-        for p in particles:
-            P = p.momentum()
-            m = p.mass
-            momentum += P
-            list_mass.append(m)
+        for p in particles:         #picking out a particle p from a list in a loop
+            P = p.momentum()        #setting the momentum of particle p as a variable
+            m = p.mass              #setting the mass of particle p as a variable
+            momentum += P           #summing up the values of the momentum of particles
+            list_mass.append(m)     #updating list with value of mass
             
-        com_velocity = momentum / np.sum(list_mass)
+        com_velocity = momentum / np.sum(list_mass) #sum of momenta divided by total mass
         return com_velocity
