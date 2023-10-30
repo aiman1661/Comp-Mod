@@ -176,9 +176,9 @@ class Particle3D(object):
         v_p2  = particles[1].velocity
         v_p3  = particles[2].velocity
         
-        T_p1  = (1/2) * particles[0].mass * np.linalg.norm(v_p1) ** 2
-        T_p2  = (1/2) * particles[1].mass * np.linalg.norm(v_p2) ** 2
-        T_p3  = (1/2) * particles[2].mass * np.linalg.norm(v_p3) ** 2
+        T_p1  = (1/2) * particles[0].mass * (np.linalg.norm(v_p1) ** 2)
+        T_p2  = (1/2) * particles[1].mass * (np.linalg.norm(v_p2) ** 2)
+        T_p3  = (1/2) * particles[2].mass * (np.linalg.norm(v_p3) ** 2)
         
         T_sum = T_p1 + T_p2 +T_p3
         return  T_sum
@@ -200,9 +200,9 @@ class Particle3D(object):
         com_vel: array
             Centre-of-mass velocity
         """
-        P_p1     = particles[0].mass * particles[0].velocity
-        P_p2     = particles[1].mass * particles[1].velocity
-        P_p3     = particles[2].mass * particles[2].velocity
+        P_p1     = particles[0].momentum()
+        P_p2     = particles[1].momentum()
+        P_p3     = particles[2].momentum()
         
         P_sum    = P_p1 + P_p2 + P_p3
         mass_sum = sum(particles[i].mass for i in range(3))
