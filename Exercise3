@@ -71,7 +71,6 @@ def potential_Morse(p1, p2, r_e, D_e, alpha):
     potential = D_e * ((1 - np.exp(-alpha * (mod_r_12 - r_e))) ** 2 - 1) 
     return potential
 
-
 def main():
     # Read inputs from command line
     # The variable sys.argv contains whatever you typed on the command line
@@ -114,12 +113,11 @@ def main():
     x2   = np.array([-0.65661, 0, 0])
     v1   = np.array([0.05, 0, 0])
     v2   = np.array([-0.05, 0, 0])
-    
+     
     p1 = Particle3D('p1', mass, x1, v1)
     p2 = Particle3D('p2', mass, x2, v2)
-    
+     
     separation = np.linalg.norm(p1.position - p2.position)
-
 
     # Get initial force
     force1 = force_Morse(p1, p2, r_e, D_e, alpha)        #force on p1 due to p2
@@ -127,13 +125,13 @@ def main():
 
     # Write out starting time, position, and energy values
     # to the output file.
-    energy = p1.kinetic_energy() + p2.kinetic_energy() + potential_Morse(p1, p2, r_e, D_e, alpha)
-    outfile.write(f"{time}  {separation}  {energy}\n")
+    energy = Particle3D.total_kinetic_energy([p1, p2]) + potential_Morse(p1, p2, r_e, D_e, alpha)
+    outfile.write(f"{time} {separation} {energy}\n")
 
     # Initialise numpy arrays that we will plot later, to record
     # the trajectories of the particles.
     times = np.zeros(numstep)
-    positions = np.zeros(numstep)
+    separations = np.zeros(numstep)       #separation distance
     energies = np.zeros(numstep)
 
     # Start the time integration loop
@@ -142,11 +140,12 @@ def main():
         # Update the positions and velocities.
         # This will depend on whether we are doing an Euler or verlet integration
         if mode == "euler":
-            # Update particle position
+            # Update particle positions and separation distance
             p1.update_position_1st(dt)
             p2.update_position_1st(dt)
+            separation = np.linalg.norm(p1.position - p2.position)
             
-            # Calculate force
+            # Calculate forces
             force1 = force_Morse(p1, p2, r_e, D_e, alpha)
             force2 = -force_Morse(p1, p2, r_e, D_e, alpha)
 
@@ -155,9 +154,10 @@ def main():
             p2.update_velocity(dt, force2)
 
         elif mode == "verlet":
-            # Update particle position using previous force
+            # Update particle position and separation distance using previous force
             p1.update_position_2nd(dt, force1)
             p2.update_position_2nd(dt, force2)
+            separation = np.linalg.norm(p1.position - p2.position)
             
             # Get the force value for the new positions
             force1_new  = force_Morse(p1, p2, r_e, D_e, alpha)
@@ -178,12 +178,12 @@ def main():
         time += dt
         
         # Output particle information
-        energy = p1.kinetic_energy() + p2.kinetic_energy() + potential_Morse(p1, p2, r_e, D_e, alpha)
+        energy = Particle3D.total_kinetic_energy([p1, p2]) + potential_Morse(p1, p2, r_e, D_e, alpha)
         outfile.write(f"{time} {separation} {energy}\n")
 
         # Store the things we want to plot later in our arrays
         times[i] = time
-        positions[i] = np.linalg.norm(p1.position - p2.position)
+        separations[i] = separation
         energies[i] = energy
 
     # Now the simulation has finished we can close our output file
@@ -192,25 +192,46 @@ def main():
     # Plot particle trajectory to screen. There are no units
     # here because it is an abstract simulation, but you should
     # include units in your plot labels!
-    pyplot.figure()
-    pyplot.title('Symplectic Euler: separation distance vs time')
-    pyplot.xlabel('Time')
-    pyplot.ylabel('Separation Distance')
-    pyplot.plot(times, positions)
-    pyplot.show()
+   
+    if mode == 'euler':
+        pyplot.figure()
+        pyplot.title('Symplectic Euler: separation distance vs time')
+        pyplot.xlabel('Time')
+        pyplot.ylabel('Separation Distance')
+        pyplot.plot(times, separations)
+        pyplot.show()
 
-    # Plot particle energy to screen
-    pyplot.figure()
-    pyplot.title('Symplectic Euler: total energy vs time')
-    pyplot.xlabel('Time')
-    pyplot.ylabel('Energy')
-    pyplot.plot(times, energies)
-    pyplot.show()
+        # Plot particle energy to screen
+        pyplot.figure()
+        pyplot.title('Symplectic Euler: total energy vs time')
+        pyplot.xlabel('Time')
+        pyplot.ylabel('Energy')
+        pyplot.plot(times, energies)
+        pyplot.show()
+        
+    elif mode == 'verlet':        
+        pyplot.figure()
+        pyplot.title('Velocity Verlet: separation distance vs time')
+        pyplot.xlabel('Time')
+        pyplot.ylabel('Separation Distance')
+        pyplot.plot(times, separations)
+        pyplot.show()
 
-
+        # Plot particle energy to screen
+        pyplot.figure()
+        pyplot.title('Velocity Verlet: total energy vs time')
+        pyplot.xlabel('Time')
+        pyplot.ylabel('Energy')
+        pyplot.plot(times, energies)
+        pyplot.show()
+        
+    else:
+        raise ValueError(f"Unknown mode {mode} - should be euler or verlet")
+                
 # This strange but standard python idiom means that the main function will
 # only be run if we run this file, not if we just import it from another
 # python file. It is good practice to include it whenever your code can be
 # run as a program.
 if __name__ == "__main__":
     main()
+
