@@ -19,8 +19,11 @@ Number: S2229553
 import sys
 import math
 import numpy as np
+from scipy.signal import find_peaks
 import matplotlib.pyplot as pyplot
 from particle3D import Particle3D
+
+c = 299792458e2   #speed of light from CODATA in cm s-1
 
 def force_Morse(p1, p2, r_e, D_e, alpha):
     """
@@ -70,6 +73,16 @@ def potential_Morse(p1, p2, r_e, D_e, alpha):
     
     potential = D_e * ((1 - np.exp(-alpha * (mod_r_12 - r_e))) ** 2 - 1) 
     return potential
+
+def osci_period(separations, times):
+    peaks = find_peaks(separations)
+    T     = times[peaks[0][1]] - times[peaks[0][0]]
+    
+    T_new = T * 1.018050571e-14
+    
+    wavenumber = 1/ (T_new * c) 
+    return wavenumber
+    
 
 def main():
     # Read inputs from command line
@@ -209,6 +222,8 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
+        print(f'The wavenumber is {osci_period(separations, times)}')
+        
     elif mode == 'verlet':        
         pyplot.figure()
         pyplot.title('Velocity Verlet: separation distance vs time')
@@ -234,4 +249,3 @@ def main():
 # run as a program.
 if __name__ == "__main__":
     main()
-
