@@ -1,0 +1,58 @@
+"""
+Programme to read files containing data from computational experiment and make accuracy comparisons
+between time integrators with different parameters. In this case, we consider the accuracy when the parameters
+dt and step number are changed, and we measure this in terms of the energy and frequency inaccuracies.
+
+@author: aimanmohdyuzmanizeil
+number : s2229553
+"""
+
+import sys
+import numpy as np
+import matplotlib.pyplot as pyplot
+     
+def main():
+    if len(sys.argv) != 3 :
+        print(f"%run {sys.argv[0]} <output file> <input file 1> <input file 2> <input file 3> <input file 4> <input file 5> <input file 6>")
+        sys.exit(1)
+    else:
+        outfile_name = sys.argv[1]
+        
+        list_of_files = []
+        for i in range(6):
+            inputfile = sys.argv[i+2]
+            list_of_files.append(inputfile)
+            
+        infile1_name = sys.argv[2]
+#        infile2_name = sys.argv[3]
+#        infile3_name = sys.argv[4]
+#        infile4_name = sys.argv[5]
+#        infile5_name = sys.argv[6]
+#        infile6_name = sys.argv[7]
+
+    # Open the output file for writing ("w") and input file for reading ("r") 
+    outfile  = open(outfile_name, "w")
+    infile1  = open(infile1_name, 'r')
+#    infile2  = open(infile2_name, 'r')
+#    infile3  = open(infile3_name, 'r')
+#    infile4  = open(infile4_name, 'r')
+#    infile5  = open(infile5_name, 'r')
+#    infile6  = open(infile6_name, 'r')
+    
+    energy_ratio = []
+    wavenumber   = []
+    
+    fileline1 = infile1.read().splitlines()
+    last_line = fileline1[-1]
+    token     = last_line.split()
+    
+    energy_ratio.append(token[1])
+    wavenumber.append(token[0])
+    
+    infile1.close()
+    
+    outfile.write(f"{energy_ratio[0]} {wavenumber[0]}")
+    outfile.close()
+    
+if __name__ == "__main__":
+    main()
