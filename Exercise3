@@ -83,6 +83,11 @@ def osci_period(separations, times):
     wavenumber = 1/ (T_new * c) 
     return wavenumber
     
+def energy_ratio(energies, times):
+    delta_energy = np.max(energies) - np.min(energies)
+    energy_0     = energies[0]
+    ratio        = delta_energy / energy_0
+    return ratio
 
 def main():
     # Read inputs from command line
@@ -95,37 +100,48 @@ def main():
     #    the name of the output file the user wants to write to
     # So we start by checking that all three are specified and quit if not,
     # after giving the user a helpful error message.
-    if len(sys.argv) != 3 :
+    if len(sys.argv) != 4 :
         print("You left out the name of the output file when running.")
         print("In spyder, run like this instead:")
-        print(f"    %run {sys.argv[0]} <euler or verlet> <desired output file>")
+        print(f"    %run {sys.argv[0]} <euler or verlet> <desired output file> <input file name>")
         sys.exit(1)
     else:
         mode = sys.argv[1]
         outfile_name = sys.argv[2]
+        infile_name  = sys.argv[3]
 
     # Open the output file for writing ("w")
     outfile = open(outfile_name, "w")
-
+    infile  = open(infile_name, 'r')
+    
+    line1    = infile.readline()
+    line2    = infile.readline()
+    line3    = infile.readline()
+    token_1  = line1.split()
+    token_2  = line2.split()
+    token_3  = line3.split()
+    
+    infile.close()
+    
     # Choose our simulation parameters
-    dt      = 0.01
-    numstep = 10000
+    D_e     = float(token_1[0])
+    r_e     = float(token_1[1])
+    alpha   = float(token_1[2])
+    dt      = float(token_1[3])
+    numstep = int(token_1[4])
     time    = 0.0
-    r_e     = 1.20752
-    D_e     = 5.21322
-    alpha   = 2.65374
-
+    
     # Set up particle initial conditions:
     #  position x1   = (0.65661, 0, 0)
     #  velocity v1   = (0.05, 0, 0)
     #  position x1   = (-0.65661, 0, 0)
     #  velocity v1   = (-0.05, 0, 0)
     #  mass p1, p2 m = 16.0
-    mass = 16.0
-    x1   = np.array([0.65661, 0, 0])
-    x2   = np.array([-0.65661, 0, 0])
-    v1   = np.array([0.05, 0, 0])
-    v2   = np.array([-0.05, 0, 0])
+    mass = float(token_2[1])
+    x1   = np.array([float(token_2[2]), float(token_2[3]), float(token_2[4])])
+    x2   = np.array([float(token_3[2]), float(token_3[3]), float(token_3[4])])
+    v1   = np.array([float(token_2[5]), float(token_2[6]), float(token_2[7])])
+    v2   = np.array([float(token_3[5]), float(token_3[6]), float(token_3[7])])
      
     p1 = Particle3D('p1', mass, x1, v1)
     p2 = Particle3D('p2', mass, x2, v2)
@@ -222,7 +238,7 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
-        print(f'The wavenumber is {osci_period(separations, times)}')
+        print(f'The wavenumber is {osci_period(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
         
     elif mode == 'verlet':        
         pyplot.figure()
@@ -239,6 +255,8 @@ def main():
         pyplot.ylabel('Energy')
         pyplot.plot(times, energies)
         pyplot.show()
+        
+        print(f'The wavenumber is {osci_period(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
         
     else:
         raise ValueError(f"Unknown mode {mode} - should be euler or verlet")
