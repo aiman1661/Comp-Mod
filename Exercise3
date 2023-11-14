@@ -17,7 +17,6 @@ Number: S2229553
 """
 
 import sys
-import math
 import numpy as np
 from scipy.signal import find_peaks
 import matplotlib.pyplot as pyplot
@@ -73,7 +72,7 @@ def potential_Morse(p1, p2, r_e, D_e, alpha):
     potential = D_e * ((1 - np.exp(-alpha * (mod_r_12 - r_e))) ** 2 - 1) 
     return potential
 
-def wavefunction(separations, times):
+def wavenumber(separations, times):
     '''
     Calculating the wavenumber in correct units. This first calculates the period of oscillation then convert it into correct unit.
     Formula given by wavefunction = 1 / (period * c).
@@ -140,7 +139,7 @@ def main():
         outfile_name = sys.argv[2]
         infile_name  = sys.argv[3]
 
-    # Open the output file for writing ("w")
+    # Open the output file for writing ("w") and input file for reading ("r") 
     outfile = open(outfile_name, "w")
     infile  = open(infile_name, 'r')
     
@@ -234,6 +233,8 @@ def main():
         energies[i] = energy
 
     # Now the simulation has finished we can close our output file
+    frequency = wavenumber(separations, times) * c 
+    outfile.write(f"{frequency} {energy_ratio(energies, times)}")
     outfile.close()
 
     # Plot particle trajectory to screen. There are no units
@@ -256,7 +257,7 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
-        print(f'The wavenumber is {wavefunction(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
+        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
         
     elif mode == 'verlet':        
         pyplot.figure()
@@ -274,7 +275,7 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
-        print(f'The wavenumber is {wavefunction(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
+        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
         
     else:
         raise ValueError(f"Unknown mode {mode} - should be euler or verlet")
