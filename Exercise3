@@ -50,7 +50,6 @@ def force_Morse(p1, p2, r_e, D_e, alpha):
     force_1 = 2 * alpha * D_e * (1 - np.exp(-alpha * (mod_r_12 - r_e))) * np.exp(-alpha * (mod_r_12 - r_e)) * r_12_hat
     return force_1
 
-
 def potential_Morse(p1, p2, r_e, D_e, alpha):
     """
     Method to return potential energy 
@@ -74,7 +73,22 @@ def potential_Morse(p1, p2, r_e, D_e, alpha):
     potential = D_e * ((1 - np.exp(-alpha * (mod_r_12 - r_e))) ** 2 - 1) 
     return potential
 
-def osci_period(separations, times):
+def wavefunction(separations, times):
+    '''
+    Calculating the wavenumber in correct units. This first calculates the period of oscillation then convert it into correct unit.
+    Formula given by wavefunction = 1 / (period * c).
+    
+    Parameters
+    ----------
+    separations : list
+                    list of separation distances between the particles
+    times : list
+                    timestamps of the motion of the particles
+
+    Returns
+    -------
+    wavenumber : float
+    '''
     peaks = find_peaks(separations)
     T     = times[peaks[0][1]] - times[peaks[0][0]]
     
@@ -84,6 +98,21 @@ def osci_period(separations, times):
     return wavenumber
     
 def energy_ratio(energies, times):
+    '''
+    Calculating the energy inaccuracy given by initial energy / max difference in energy.
+
+    Parameters
+    ----------
+    energies : list
+        list of total energy of the system.
+    times : list
+        timestamps of the motion of particles.
+
+    Returns
+    -------
+    ratio : float
+        measures the inaccuracy of our simulation through energy fluctuations
+    '''
     delta_energy = np.max(energies) - np.min(energies)
     energy_0     = energies[0]
     ratio        = delta_energy / energy_0
@@ -98,6 +127,7 @@ def main():
     #    the name of this file
     #    euler or verlet
     #    the name of the output file the user wants to write to
+    #    the name of input file containing parameters and molecule data for the experiment
     # So we start by checking that all three are specified and quit if not,
     # after giving the user a helpful error message.
     if len(sys.argv) != 4 :
@@ -117,34 +147,22 @@ def main():
     line1    = infile.readline()
     line2    = infile.readline()
     line3    = infile.readline()
-    token_1  = line1.split()
-    token_2  = line2.split()
-    token_3  = line3.split()
+    token    = line1.split()
     
     infile.close()
     
     # Choose our simulation parameters
-    D_e     = float(token_1[0])
-    r_e     = float(token_1[1])
-    alpha   = float(token_1[2])
-    dt      = float(token_1[3])
-    numstep = int(token_1[4])
+    D_e     = float(token[0])
+    r_e     = float(token[1])
+    alpha   = float(token[2])
+    dt      = float(token[3])
+    numstep = int(token[4])
     time    = 0.0
     
-    # Set up particle initial conditions:
-    #  position x1   = (0.65661, 0, 0)
-    #  velocity v1   = (0.05, 0, 0)
-    #  position x1   = (-0.65661, 0, 0)
-    #  velocity v1   = (-0.05, 0, 0)
-    #  mass p1, p2 m = 16.0
-    mass = float(token_2[1])
-    x1   = np.array([float(token_2[2]), float(token_2[3]), float(token_2[4])])
-    x2   = np.array([float(token_3[2]), float(token_3[3]), float(token_3[4])])
-    v1   = np.array([float(token_2[5]), float(token_2[6]), float(token_2[7])])
-    v2   = np.array([float(token_3[5]), float(token_3[6]), float(token_3[7])])
-     
-    p1 = Particle3D('p1', mass, x1, v1)
-    p2 = Particle3D('p2', mass, x2, v2)
+    # Create particles using P3D instance read from input file
+
+    p1 = Particle3D.read_line(line2)
+    p2 = Particle3D.read_line(line3)
      
     separation = np.linalg.norm(p1.position - p2.position)
 
@@ -238,7 +256,7 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
-        print(f'The wavenumber is {osci_period(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
+        print(f'The wavenumber is {wavefunction(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
         
     elif mode == 'verlet':        
         pyplot.figure()
@@ -256,7 +274,7 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
-        print(f'The wavenumber is {osci_period(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
+        print(f'The wavenumber is {wavefunction(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
         
     else:
         raise ValueError(f"Unknown mode {mode} - should be euler or verlet")
