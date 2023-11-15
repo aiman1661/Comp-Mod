@@ -11,48 +11,82 @@ import sys
 import numpy as np
 import matplotlib.pyplot as pyplot
      
+def frequency_ratio(frequency_0, frequency):
+    '''
+    Calculate frequency inaccuracy.
+
+    Parameters
+    ----------
+    frequency_0 : float
+                    frequency of simulation with smallest dt
+    frequency : float
+                    frequency for any one simulation
+
+    Returns
+    -------
+    ratio : float
+        (frequency - frequency_0) / frequency_0
+    '''
+    ratio = (frequency - frequency_0) / frequency_0
+    return ratio    
+
 def main():
-    if len(sys.argv) != 3 :
-        print(f"%run {sys.argv[0]} <output file> <input file 1> <input file 2> <input file 3> <input file 4> <input file 5> <input file 6>")
+    if len(sys.argv) != 7 :
+        print(f"%run {sys.argv[0]} <output file> <input file 1> <input file 2> <input file 3> <input file 4> <input file 5> in descending order of dt")
         sys.exit(1)
     else:
         outfile_name = sys.argv[1]
         
         list_of_files = []
-        for i in range(6):
+        for i in range(5):
             inputfile = sys.argv[i+2]
             list_of_files.append(inputfile)
-            
-        infile1_name = sys.argv[2]
-#        infile2_name = sys.argv[3]
-#        infile3_name = sys.argv[4]
-#        infile4_name = sys.argv[5]
-#        infile5_name = sys.argv[6]
-#        infile6_name = sys.argv[7]
-
-    # Open the output file for writing ("w") and input file for reading ("r") 
-    outfile  = open(outfile_name, "w")
-    infile1  = open(infile1_name, 'r')
-#    infile2  = open(infile2_name, 'r')
-#    infile3  = open(infile3_name, 'r')
-#    infile4  = open(infile4_name, 'r')
-#    infile5  = open(infile5_name, 'r')
-#    infile6  = open(infile6_name, 'r')
     
     energy_ratio = []
-    wavenumber   = []
+    frequency   = []
+    outfile      = open(outfile_name, "w")
+
+    for file in list_of_files:
+        infile    = open(file, "r")
+        lines     = infile.read().splitlines()
+        last_line = lines[-1]
+        token     = last_line.split()
+        energy_ratio.append(float(token[1]))
+        frequency.append(float(token[0]))
+        outfile.write(f"{token[0]} {token[1]} \n")
+        infile.close()
     
-    fileline1 = infile1.read().splitlines()
-    last_line = fileline1[-1]
-    token     = last_line.split()
+    outfile.write("\n frequency_relative_inaccuracy frequency_percentage_inaccuracy \n")
+    ratio_f      = []
+    percentage_f = []
+    for f in frequency:
+        f_0          = frequency[4]
+        f_ratio      = np.abs(frequency_ratio(f_0, f))
+        f_percentage = f_ratio * 100
+        outfile.write(f"{f_ratio} {f_percentage}%\n")
+        ratio_f.append(f_ratio)
+        percentage_f.append(f_percentage)
     
-    energy_ratio.append(token[1])
-    wavenumber.append(token[0])
+    outfile.write("\n energy_relative_inaccuracy energy_percentage_inaccuracy \n ")
+    ratio_e      = []
+    percentage_e = []
+    for e in energy_ratio:
+        e_ratio      = np.abs(e)
+        e_percentage = e_ratio * 100
+        outfile.write(f"{e_ratio} {e_percentage}%\n")
+        ratio_e.append(e_ratio)
+        percentage_e.append(e_percentage)
     
-    infile1.close()
-    
-    outfile.write(f"{energy_ratio[0]} {wavenumber[0]}")
     outfile.close()
+    
+    dt = [0.1, 0.01, 0.001, 0.0001, 0.00001]
+    model4 = np.poly1d(np.polyfit(np.log10(dt), percentage_f, 4))
+    polyline = np.linspace(-5, 1, 500)
+    pyplot.plot(polyline, model4(polyline), color='blue') 
+    pyplot.plot(np.log10(dt), percentage_f, 'x')
+    pyplot.xlabel('dt (log10)')
+    pyplot.ylabel('percentage frequency inaccuracy')
+    pyplot.show()
     
 if __name__ == "__main__":
     main()
