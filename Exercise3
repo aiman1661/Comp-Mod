@@ -235,6 +235,7 @@ def main():
     # Now the simulation has finished we can close our output file
     frequency = wavenumber(separations, times) * c 
     outfile.write(f"{frequency} {energy_ratio(energies, times)}")
+    # Now the simulation has finished we can close our output file
     outfile.close()
 
     # Plot particle trajectory to screen. There are no units
