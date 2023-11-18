@@ -259,7 +259,7 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
-        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1 and the energy inaccuracy is {np.abs(energy_ratio(energies, times))}.')
+        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1, frequency is {frequency} s^-1 and the energy inaccuracy is {np.abs(energy_ratio(energies, times))}.')
         
     elif mode == 'verlet':        
         pyplot.figure()
@@ -277,7 +277,7 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
-        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1 and the energy inaccuracy is {np.abs(energy_ratio(energies, times))}.')
+        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1, frequency is {frequency} s^-1 and the energy inaccuracy is {np.abs(energy_ratio(energies, times))}.')
         
     else:
         raise ValueError(f"Unknown mode {mode} - should be euler or verlet")
