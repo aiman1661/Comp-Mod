@@ -234,7 +234,8 @@ def main():
 
     # in the last line of the simulation, we record the frequency and energy inaccuracy, in that order
     frequency = wavenumber(separations, times) * c 
-    outfile.write(f"{frequency} {energy_ratio(energies, times)}")
+    outfile.write("\nfrequency(s^-1)  energy_inaccuracy \n")
+    outfile.write(f"{frequency} {np.abs(energy_ratio(energies, times))}")
     # Now the simulation has finished we can close our output file
     outfile.close()
 
@@ -258,7 +259,7 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
-        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
+        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1 and the energy inaccuracy is {np.abs(energy_ratio(energies, times))}.')
         
     elif mode == 'verlet':        
         pyplot.figure()
@@ -276,7 +277,7 @@ def main():
         pyplot.plot(times, energies)
         pyplot.show()
         
-        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1 and the energy inaccuracy is {energy_ratio(energies, times)}.')
+        print(f'The wavenumber is {wavenumber(separations, times)} cm^-1 and the energy inaccuracy is {np.abs(energy_ratio(energies, times))}.')
         
     else:
         raise ValueError(f"Unknown mode {mode} - should be euler or verlet")
