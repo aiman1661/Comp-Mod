@@ -232,7 +232,7 @@ def main():
         separations[i] = separation
         energies[i] = energy
 
-    # Now the simulation has finished we can close our output file
+    # in the last line of the simulation, we record the frequency and energy inaccuracy, in that order
     frequency = wavenumber(separations, times) * c 
     outfile.write(f"{frequency} {energy_ratio(energies, times)}")
     # Now the simulation has finished we can close our output file
