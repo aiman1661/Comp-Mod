@@ -1,7 +1,8 @@
 """
 Programme to read files containing data from computational experiment and make accuracy comparisons
 between time integrators with different parameters. In this case, we consider the accuracy when the parameters
-dt and step number are changed, and we measure this in terms of the energy and frequency inaccuracies.
+dt and step number are changed, and we measure this in terms of the energy and frequency inaccuracies. Then,
+we determine the best dt for our experimental simulation.
 
 @author: aimanmohdyuzmanizeil
 number : s2229553
@@ -46,6 +47,7 @@ def main():
     frequency   = []
     outfile      = open(outfile_name, "w")
 
+    outfile.write("frequency(s^-1) energy_inaccuracy \n")
     for file in list_of_files:
         infile    = open(file, "r")
         lines     = infile.read().splitlines()
@@ -60,7 +62,7 @@ def main():
     ratio_f      = []
     percentage_f = []
     for f in frequency:
-        f_0          = frequency[4]
+        f_0          = frequency[4]     #frequency correspondng to the smallest dt
         f_ratio      = np.abs(frequency_ratio(f_0, f))
         f_percentage = f_ratio * 100
         outfile.write(f"{f_ratio} {f_percentage}%\n")
@@ -80,12 +82,21 @@ def main():
     outfile.close()
     
     dt = [0.1, 0.01, 0.001, 0.0001, 0.00001]
-    model4 = np.poly1d(np.polyfit(np.log10(dt), percentage_f, 4))
-    polyline = np.linspace(-5, 1, 500)
-    pyplot.plot(polyline, model4(polyline), color='blue') 
-    pyplot.plot(np.log10(dt), percentage_f, 'x')
-    pyplot.xlabel('dt (log10)')
+    fig, ax = pyplot.subplots()
+    ax.plot(np.log(dt), percentage_e)
+    pyplot.plot(np.log(dt), percentage_e, 'x')
+    pyplot.title("Percentage frequency inaccuracy against log(dt)")
+    pyplot.xlabel('log(dt)')
     pyplot.ylabel('percentage frequency inaccuracy')
+    pyplot.show()
+    
+    dt = [0.1, 0.01, 0.001, 0.0001, 0.00001]
+    fig, ax = pyplot.subplots()
+    ax.plot(np.log(dt), percentage_e)
+    pyplot.plot(np.log(dt), percentage_e, 'x')
+    pyplot.title("Percentage energy inaccuracy against log(dt)")
+    pyplot.xlabel('log(dt)')
+    pyplot.ylabel('percentage energy inaccuracy')
     pyplot.show()
     
 if __name__ == "__main__":
