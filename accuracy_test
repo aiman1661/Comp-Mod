@@ -83,8 +83,8 @@ def main():
     
     dt = [0.1, 0.01, 0.001, 0.0001, 0.00001]
     fig, ax = pyplot.subplots()
-    ax.plot(np.log(dt), percentage_e)
-    pyplot.plot(np.log(dt), percentage_e, 'x')
+    ax.plot(np.log(dt), percentage_f)
+    pyplot.plot(np.log(dt), percentage_f, 'x')
     pyplot.title("Percentage frequency inaccuracy against log(dt)")
     pyplot.xlabel('log(dt)')
     pyplot.ylabel('percentage frequency inaccuracy')
