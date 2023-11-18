@@ -246,16 +246,16 @@ def main():
     if mode == 'euler':
         pyplot.figure()
         pyplot.title('Symplectic Euler: separation distance vs time')
-        pyplot.xlabel('Time')
-        pyplot.ylabel('Separation Distance')
+        pyplot.xlabel('Time [T]')
+        pyplot.ylabel('Separation Distance (Angstrom)')
         pyplot.plot(times, separations)
         pyplot.show()
 
         # Plot particle energy to screen
         pyplot.figure()
         pyplot.title('Symplectic Euler: total energy vs time')
-        pyplot.xlabel('Time')
-        pyplot.ylabel('Energy')
+        pyplot.xlabel('Time [T]')
+        pyplot.ylabel('Energy (eV)')
         pyplot.plot(times, energies)
         pyplot.show()
         
@@ -264,16 +264,16 @@ def main():
     elif mode == 'verlet':        
         pyplot.figure()
         pyplot.title('Velocity Verlet: separation distance vs time')
-        pyplot.xlabel('Time')
-        pyplot.ylabel('Separation Distance')
+        pyplot.xlabel('Time [T]')
+        pyplot.ylabel('Separation Distance (Angstrom)')
         pyplot.plot(times, separations)
         pyplot.show()
 
         # Plot particle energy to screen
         pyplot.figure()
         pyplot.title('Velocity Verlet: total energy vs time')
-        pyplot.xlabel('Time')
-        pyplot.ylabel('Energy')
+        pyplot.xlabel('Time [T]')
+        pyplot.ylabel('Energy (eV)')
         pyplot.plot(times, energies)
         pyplot.show()
         
