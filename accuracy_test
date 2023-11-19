@@ -1,8 +1,8 @@
 """
 Programme to read files containing data from computational experiment and make accuracy comparisons
 between time integrators with different parameters. In this case, we consider the accuracy when the parameters
-dt and step number are changed, and we measure this in terms of the energy and frequency inaccuracies. Then,
-we determine the best dt for our experimental simulation.
+dt and step number are changed, and we measure this in terms of the energy and frequency inaccuracies and 
+display the plots for the comparisons. Then, we determine the best dt for our experimental simulation.
 
 @author: aimanmohdyuzmanizeil
 number : s2229553
@@ -19,7 +19,7 @@ def frequency_ratio(frequency_0, frequency):
     Parameters
     ----------
     frequency_0 : float
-                    frequency of simulation with smallest dt
+                    frequency of simulation with smallest dt.
     frequency : float
                     frequency for any one simulation
 
@@ -32,7 +32,7 @@ def frequency_ratio(frequency_0, frequency):
     return ratio    
 
 def main():
-    #reads all oxygen files with various dt values in decreasing order
+    #reads all oxygen files as input files with various dt values in decreasing order
     if len(sys.argv) != 7 :
         print(f"%run {sys.argv[0]} <output file> <input file 1> <input file 2> <input file 3> <input file 4> <input file 5> in descending order of dt")
         sys.exit(1)
@@ -40,53 +40,54 @@ def main():
         outfile_name = sys.argv[1]
         
         list_of_files = []
-        for i in range(5):
+        for i in range(5):              #looping the process of putting file names in to a list dor later access
             inputfile = sys.argv[i+2]
             list_of_files.append(inputfile)
     
     energy_ratio = []
-    frequency   = []
+    frequency    = []
     outfile      = open(outfile_name, "w")
 
-    outfile.write("frequency(s^-1) energy_inaccuracy \n")
+    outfile.write("frequency(s^-1) energy_inaccuracy \n")           #format of input files
     for file in list_of_files:
         infile    = open(file, "r")
-        lines     = infile.read().splitlines()
-        last_line = lines[-1]
-        token     = last_line.split()
+        lines     = infile.read().splitlines()      #accessing individual lines
+        last_line = lines[-1]                       #reading off the last line in file, due to file format
+        token     = last_line.split()               #indexing the frequency and energy inaccuracy elements
         energy_ratio.append(float(token[1]))
         frequency.append(float(token[0]))
         outfile.write(f"{token[0]} {token[1]} \n")
         infile.close()
     
-    outfile.write("\n frequency_relative_inaccuracy frequency_percentage_inaccuracy \n")
+    outfile.write("\n <frequency_relative_inaccuracy> <frequency_percentage_inaccuracy> \n") #formatting output file
     ratio_f      = []
     percentage_f = []
     for f in frequency:
         f_0          = frequency[4]     #frequency correspondng to the smallest dt
-        f_ratio      = np.abs(frequency_ratio(f_0, f))
-        f_percentage = f_ratio * 100
+        f_ratio      = np.abs(frequency_ratio(f_0, f))      #take absolute value of error ratio
+        f_percentage = f_ratio * 100                    #convert to percentage
         outfile.write(f"{f_ratio} {f_percentage}%\n")
         ratio_f.append(f_ratio)
         percentage_f.append(f_percentage)
     
-    outfile.write("\n energy_relative_inaccuracy energy_percentage_inaccuracy \n ")
+    outfile.write("\n <energy_relative_inaccuracy> <energy_percentage_inaccuracy> \n ") #formatting output file
     ratio_e      = []
     percentage_e = []
     for e in energy_ratio:
-        e_ratio      = np.abs(e)
-        e_percentage = e_ratio * 100
+        e_ratio      = np.abs(e)            #taking absolute value of energy inaccuracy
+        e_percentage = e_ratio * 100        #convert to percentage
         outfile.write(f"{e_ratio} {e_percentage}%\n")
         ratio_e.append(e_ratio)
         percentage_e.append(e_percentage)
     
     outfile.close()
     
-    if outfile_name == "accuracytesteuler":
+    if outfile_name == "accuracytesteuler":             #automatically name the plots
         name = "Symplectic Euler"
     else:
         name = "Velocity Verlet"
     
+    #x axis of plots is converted into log so plots are more comprehensible
     dt = [0.1, 0.01, 0.001, 0.0001, 0.00001]
     fig, ax = pyplot.subplots()
     ax.plot(np.log(dt), percentage_f)
