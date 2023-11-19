@@ -119,16 +119,11 @@ def energy_ratio(energies, times):
 
 def main():
     # Read inputs from command line
-    # The variable sys.argv contains whatever you typed on the command line
-    # or after %run on the ipython console to launch the code.  We can use
-    # it to get user inputs.
-    # Here we expect three things:
+    # Here we expect four things:
     #    the name of this file
     #    euler or verlet
     #    the name of the output file the user wants to write to
     #    the name of input file containing parameters and molecule data for the experiment
-    # So we start by checking that all three are specified and quit if not,
-    # after giving the user a helpful error message.
     if len(sys.argv) != 4 :
         print("You left out the name of the output file when running.")
         print("In spyder, run like this instead:")
@@ -159,7 +154,6 @@ def main():
     time    = 0.0
     
     # Create particles using P3D instance read from input file
-
     p1 = Particle3D.read_line(line2)
     p2 = Particle3D.read_line(line3)
      
@@ -169,6 +163,8 @@ def main():
     force1 = force_Morse(p1, p2, r_e, D_e, alpha)        #force on p1 due to p2
     force2 = -force_Morse(p1, p2, r_e, D_e, alpha)       #force on p2 due to p1 (N3)
 
+
+    outfile.write("time separation energy\n")    #formatting in file
     # Write out starting time, position, and energy values
     # to the output file.
     energy = Particle3D.total_kinetic_energy([p1, p2]) + potential_Morse(p1, p2, r_e, D_e, alpha)
@@ -234,7 +230,7 @@ def main():
 
     # in the last line of the simulation, we record the frequency and energy inaccuracy, in that order
     frequency = wavenumber(separations, times) * c 
-    outfile.write("\nfrequency(s^-1)  energy_inaccuracy \n")
+    outfile.write("frequency(s^-1)  energy_inaccuracy \n")
     outfile.write(f"{frequency} {np.abs(energy_ratio(energies, times))}")
     # Now the simulation has finished we can close our output file
     outfile.close()
