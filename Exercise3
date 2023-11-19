@@ -88,12 +88,12 @@ def wavenumber(separations, times):
     -------
     wavenumber : float
     '''
-    peaks = find_peaks(separations)
-    T     = times[peaks[0][1]] - times[peaks[0][0]]
+    peaks = find_peaks(separations)     #indexing the peaks in the list of separation distance
+    T     = times[peaks[0][1]] - times[peaks[0][0]]    #difference in time between two peaks
     
-    T_new = T * 1.018050571e-14
+    T_new = T * 1.018050571e-14     #converting period into right unit
     
-    wavenumber = 1/ (T_new * c) 
+    wavenumber = 1/ (T_new * c)    #calculating wavenumber
     return wavenumber
     
 def energy_ratio(energies, times):
@@ -112,8 +112,8 @@ def energy_ratio(energies, times):
     ratio : float
         measures the inaccuracy of our simulation through energy fluctuations
     '''
-    delta_energy = np.max(energies) - np.min(energies)
-    energy_0     = energies[0]
+    delta_energy = np.max(energies) - np.min(energies)     #difference in max and min energy
+    energy_0     = energies[0]                              #initial energy
     ratio        = delta_energy / energy_0
     return ratio
 
@@ -138,16 +138,16 @@ def main():
     outfile = open(outfile_name, "w")
     infile  = open(infile_name, 'r')
     
-    line1    = infile.readline()
-    line2    = infile.readline()
-    line3    = infile.readline()
-    token    = line1.split()
+    line1    = infile.readline()            #these lines just set the lines in the file
+    line2    = infile.readline()            #as variables, and the last line splits 
+    line3    = infile.readline()            #the first line into individual strings as
+    token    = line1.split()                #the first line contains parameters and constants
     
     infile.close()
     
-    # Choose our simulation parameters
-    D_e     = float(token[0])
-    r_e     = float(token[1])
+    # Setting our simulation parameters
+    D_e     = float(token[0])           #the elements in the 'token' list and first line of 
+    r_e     = float(token[1])           #the input file correspond to these parameters in THAT order
     alpha   = float(token[2])
     dt      = float(token[3])
     numstep = int(token[4])
@@ -157,17 +157,17 @@ def main():
     p1 = Particle3D.read_line(line2)
     p2 = Particle3D.read_line(line3)
      
-    separation = np.linalg.norm(p1.position - p2.position)
+    separation = np.linalg.norm(p1.position - p2.position)   #separation distance between the particles
 
     # Get initial force
     force1 = force_Morse(p1, p2, r_e, D_e, alpha)        #force on p1 due to p2
-    force2 = -force_Morse(p1, p2, r_e, D_e, alpha)       #force on p2 due to p1 (N3)
+    force2 = -force_Morse(p1, p2, r_e, D_e, alpha)       #force on p2 due to p1 (N3L)
 
 
-    outfile.write("time separation energy\n")    #formatting in file
-    # Write out starting time, position, and energy values
+    outfile.write("<time> <separation> <energy>\n")    #formatting in file
+    # Write out starting time, separation distance, and energy values
     # to the output file.
-    energy = Particle3D.total_kinetic_energy([p1, p2]) + potential_Morse(p1, p2, r_e, D_e, alpha)
+    energy = Particle3D.total_kinetic_energy([p1, p2]) + potential_Morse(p1, p2, r_e, D_e, alpha) #total energy
     outfile.write(f"{time} {separation} {energy}\n")
 
     # Initialise numpy arrays that we will plot later, to record
@@ -185,32 +185,32 @@ def main():
             # Update particle positions and separation distance
             p1.update_position_1st(dt)
             p2.update_position_1st(dt)
-            separation = np.linalg.norm(p1.position - p2.position)
+            separation = np.linalg.norm(p1.position - p2.position)    #update separation distance
             
             # Calculate forces
             force1 = force_Morse(p1, p2, r_e, D_e, alpha)
             force2 = -force_Morse(p1, p2, r_e, D_e, alpha)
 
-            # Update particle velocity 
+            # Update particle velocities
             p1.update_velocity(dt, force1)
             p2.update_velocity(dt, force2)
 
         elif mode == "verlet":
-            # Update particle position and separation distance using previous force
+            # Update particle positions and separation distance using previous force
             p1.update_position_2nd(dt, force1)
             p2.update_position_2nd(dt, force2)
-            separation = np.linalg.norm(p1.position - p2.position)
+            separation = np.linalg.norm(p1.position - p2.position)      #update separation distance
             
-            # Get the force value for the new positions
+            # Get the force values for the new positions
             force1_new  = force_Morse(p1, p2, r_e, D_e, alpha)
             force2_new  = -force_Morse(p1, p2, r_e, D_e, alpha)
 
-            # Update particle velocity by averaging
+            # Update particle velocities by averaging
             # current and new forces
             p1.update_velocity(dt, 0.5*(force1+force1_new))
             p2.update_velocity(dt, 0.5*(force2+force2_new))
             
-            # Re-define force value for the next iteration
+            # Re-define force values for the next iteration
             force1 = force1_new
             force2 = force2_new
         else:
@@ -220,7 +220,7 @@ def main():
         time += dt
         
         # Output particle information
-        energy = Particle3D.total_kinetic_energy([p1, p2]) + potential_Morse(p1, p2, r_e, D_e, alpha)
+        energy = Particle3D.total_kinetic_energy([p1, p2]) + potential_Morse(p1, p2, r_e, D_e, alpha) #updated total energy
         outfile.write(f"{time} {separation} {energy}\n")
 
         # Store the things we want to plot later in our arrays
@@ -235,10 +235,7 @@ def main():
     # Now the simulation has finished we can close our output file
     outfile.close()
 
-    # Plot particle trajectory to screen. There are no units
-    # here because it is an abstract simulation, but you should
-    # include units in your plot labels!
-   
+    # Plot particle trajectory to screen.
     if mode == 'euler':
         pyplot.figure()
         pyplot.title('Symplectic Euler: separation distance vs time')
@@ -257,6 +254,7 @@ def main():
         
         print(f'The wavenumber is {wavenumber(separations, times)} cm^-1, frequency is {frequency} s^-1 and the energy inaccuracy is {np.abs(energy_ratio(energies, times))}.')
         
+    # Plot particle trajectory to screen.
     elif mode == 'verlet':        
         pyplot.figure()
         pyplot.title('Velocity Verlet: separation distance vs time')
@@ -278,9 +276,5 @@ def main():
     else:
         raise ValueError(f"Unknown mode {mode} - should be euler or verlet")
                 
-# This strange but standard python idiom means that the main function will
-# only be run if we run this file, not if we just import it from another
-# python file. It is good practice to include it whenever your code can be
-# run as a program.
 if __name__ == "__main__":
     main()
