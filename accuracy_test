@@ -32,6 +32,7 @@ def frequency_ratio(frequency_0, frequency):
     return ratio    
 
 def main():
+    #reads all oxygen files with various dt values in decreasing order
     if len(sys.argv) != 7 :
         print(f"%run {sys.argv[0]} <output file> <input file 1> <input file 2> <input file 3> <input file 4> <input file 5> in descending order of dt")
         sys.exit(1)
@@ -81,11 +82,16 @@ def main():
     
     outfile.close()
     
+    if outfile_name == "accuracytesteuler":
+        name = "Symplectic Euler"
+    else:
+        name = "Velocity Verlet"
+    
     dt = [0.1, 0.01, 0.001, 0.0001, 0.00001]
     fig, ax = pyplot.subplots()
     ax.plot(np.log(dt), percentage_f)
     pyplot.plot(np.log(dt), percentage_f, 'x')
-    pyplot.title("Percentage frequency inaccuracy against log(dt)")
+    pyplot.title(f"{name}: Percentage frequency inaccuracy against log(dt)")
     pyplot.xlabel('log(dt)')
     pyplot.ylabel('percentage frequency inaccuracy')
     pyplot.show()
@@ -94,7 +100,7 @@ def main():
     fig, ax = pyplot.subplots()
     ax.plot(np.log(dt), percentage_e)
     pyplot.plot(np.log(dt), percentage_e, 'x')
-    pyplot.title("Percentage energy inaccuracy against log(dt)")
+    pyplot.title(f"{name}: Percentage energy inaccuracy against log(dt)")
     pyplot.xlabel('log(dt)')
     pyplot.ylabel('percentage energy inaccuracy')
     pyplot.show()
