@@ -1,0 +1,46 @@
+"""
+Unit 1, writing down functions for the rest of the Solar System project 
+using particle3D class.
+
+Author: AIMAN MOHD YUZMANIZEIL
+Number: S2229553
+"""
+
+from particle3D import Particle3D
+import numpy as np
+
+particles = [ Particle3D("A", 1.0, np.array([3,0,0]), np.zeros(3)),
+             Particle3D("B", 1.0, np.array([2,0,1]), np.zeros(3)),
+             Particle3D("C", 1.0, np.array([1,0,2]), np.zeros(3)),
+             Particle3D("D", 1.0, np.array([0,0,3]), np.zeros(3))
+    ]
+
+def compute_separations(particles):
+    '''
+    Function to calculate separation distance between particles and store in
+    (n,n,3) shape array, n denotes number of particles.
+
+    Parameters
+    ----------
+    particles : list of particle3D classes
+        contains all particles in the system
+
+    Returns
+    -------
+    separation_array : ndarray
+        separation vector from i-th particle to j-th particle
+
+    '''
+    separation_array = np.zeros((len(particles), len(particles), 3))
+    for i in range(len(particles)):
+        for j in range(len(particles)):
+            separation = particles[i].position - particles[j].position
+            separation_array[i,j] = separation
+        
+    return separation_array
+
+separations = compute_separations(particles)
+print(separations)
+
+def compute_forces_potential(particles, separations):
+    
