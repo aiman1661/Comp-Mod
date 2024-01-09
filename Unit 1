@@ -12,7 +12,8 @@ import numpy as np
 particles = [ Particle3D("A", 1.0, np.array([3,0,0]), np.zeros(3)),
              Particle3D("B", 1.0, np.array([2,0,1]), np.zeros(3)),
              Particle3D("C", 1.0, np.array([1,0,2]), np.zeros(3)),
-             Particle3D("D", 1.0, np.array([0,0,3]), np.zeros(3))
+             Particle3D("D", 1.0, np.array([0,0,3]), np.zeros(3)),
+             Particle3D("E", 1.0, np.array([-1,2,4]), np.zeros(3))
     ]
 
 def compute_separations(particles):
@@ -43,4 +44,33 @@ separations = compute_separations(particles)
 print(separations)
 
 def compute_forces_potential(particles, separations):
+    G = 8.887692593e-10             #gravitational constant in units of AU^3 * (Earth Mass)^-1 * (day)^(-2)
     
+    force_array_i   = np.zeros((len(particles), 3))
+    force_array     = np.zeros((len(particles),3))          #empty zeros array for force
+    potential_list  = []                #empty list to store potential energy
+    
+    for i in range(len(particles)):         #fixing first index i
+        for j in range(len(particles)):     #fixing second index j
+            if i != j:                      #condition to not take force/potential on itself
+            
+                norm_separation = np.linalg.norm(separations[i][j])
+                force = - G * particles[i].mass * particles[j].mass * separations[i][j] / (norm_separation ** 3)
+                force_array_i[j] = force
+                
+                potential = - G * particles[i].mass * particles[j].mass / norm_separation
+                potential_list.append(potential)
+            
+        force_array[i] = np.sum(force_array_i, axis = 0)   
+            
+            
+    return force_array, np.sum(potential_list)/2
+       
+force, potential = compute_forces_potential(particles, separations)
+print(force, potential)
+       
+#array = np.zeros((len(particles), 3))
+#for i in range(len(particles)):       
+#    f = np.linalg.norm(compute_separations(particles)[i])
+#    array[i] = f
+#print(array)
