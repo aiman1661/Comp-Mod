@@ -1,6 +1,8 @@
 """
 Unit 1, writing down functions for the rest of the Solar System project 
-using particle3D class.
+using particle3D class. Functions are 1) to calculate separation distance
+between particles, 2) to calculate force acting on each particle and the
+total potential energy of the system.
 
 Author: AIMAN MOHD YUZMANIZEIL
 Number: S2229553
@@ -9,11 +11,9 @@ Number: S2229553
 from particle3D import Particle3D
 import numpy as np
 
-particles = [ Particle3D("A", 1.0, np.array([3,0,0]), np.zeros(3)),
-             Particle3D("B", 1.0, np.array([2,0,1]), np.zeros(3)),
-             Particle3D("C", 1.0, np.array([1,0,2]), np.zeros(3)),
-             Particle3D("D", 1.0, np.array([0,0,3]), np.zeros(3)),
-             Particle3D("E", 1.0, np.array([-1,2,4]), np.zeros(3))
+particles = [ Particle3D("A", 1.0, np.array([1,0,0]), np.zeros(3)),
+              Particle3D("B", 1.0, np.array([2,0,0]), np.zeros(3)),
+              Particle3D("C", 1.0, np.array([3,0,0]), np.zeros(3))
     ]
 
 def compute_separations(particles):
@@ -44,27 +44,46 @@ separations = compute_separations(particles)
 print(separations)
 
 def compute_forces_potential(particles, separations):
-    G = 8.887692593e-10             #gravitational constant in units of AU^3 * (Earth Mass)^-1 * (day)^(-2)
+    '''
+    Function 1) to calculate force acting on each particle and store in (n,3) shape array, 
+    2) to calculate the total potential energy of the system.
+
+    Parameters
+    ----------
+    particles : list of particle3D classes
+        contains all particles in the system
+    separations : ndarray
+        contains separation vectors between all particles
+
+    Returns
+    -------
+    force_array : ndarray
+        contains force vectors on all particles due to interaction with other particles
+    np.sum(potential_list)/2 : float
+        total potential energy of the system
+
+    '''
+    G = 8.887692593e-10          #gravitational constant in units of AU^3 * (Earth Mass)^-1 * (day)^(-2)
     
-    force_array_i   = np.zeros((len(particles), 3))
-    force_array     = np.zeros((len(particles),3))          #empty zeros array for force
+    force_array     = np.zeros((len(particles),3))    #empty zeros array for force on all particles
     potential_list  = []                #empty list to store potential energy
     
     for i in range(len(particles)):         #fixing first index i
+        force_array_i   = np.zeros((len(particles), 3))   #empty zeros array for force due to j acting on particle i
         for j in range(len(particles)):     #fixing second index j
             if i != j:                      #condition to not take force/potential on itself
             
                 norm_separation = np.linalg.norm(separations[i][j])
-                force = - G * particles[i].mass * particles[j].mass * separations[i][j] / (norm_separation ** 3)
-                force_array_i[j] = force
+                force = - G * particles[i].mass * particles[j].mass * separations[i][j] / (norm_separation ** 3) 
+                force_array_i[j] = force #force on i due to a particle j
                 
                 potential = - G * particles[i].mass * particles[j].mass / norm_separation
-                potential_list.append(potential)
+                potential_list.append(potential) #potential of system consisting of particles i and j
             
-        force_array[i] = np.sum(force_array_i, axis = 0)   
-            
-            
-    return force_array, np.sum(potential_list)/2
+        force_array[i] = np.sum(force_array_i, axis = 0)   #summing up the force vectors on i due to all j
+                       
+    return force_array, np.sum(potential_list)/2    #second output returns sum of all potential divided
+                                                    #by 2 to avoid double counting
        
 force, potential = compute_forces_potential(particles, separations)
 print(force, potential)
