@@ -154,6 +154,7 @@ def main():
     pyplot.title('Earth Trajectory')
     pyplot.xlabel('x / AU')
     pyplot.ylabel('y / AU')
+    pyplot.plot(0, 0, marker = '.', markersize = 40, color = 'red', label = 'Sun')
     pyplot.plot(positions[2, :, 0],  positions[2, :, 1])
     pyplot.show()
 
@@ -177,26 +178,31 @@ def main():
     pyplot.plot(positions[3, :, 0] - positions[2, :, 0], positions[3, :, 1] - positions[2, :, 1])
     pyplot.show()
     
-    # You can add other useful plots here to check the system.
+    # Orbit of Particles wrt COM
     pyplot.title('Orbit of Objects around Center of Mass')
     pyplot.xlabel('x / AU')
     pyplot.ylabel('y / AU')
-    pyplot.plot(positions[3, :, 0],  positions[3, :, 1], color = 'green')
-    pyplot.plot(positions[2, :, 0],  positions[2, :, 1], color = 'blue')
+    pyplot.plot(positions[3, :, 0],  positions[3, :, 1], color = 'yellow')
+    pyplot.plot(positions[2, :, 0],  positions[2, :, 1], color = 'green')
     pyplot.plot(positions[1, :, 0],  positions[1, :, 1], color = 'black')
     pyplot.plot(positions[0, :, 0],  positions[0, :, 1], color = 'red')
     pyplot.show()
     
+    # Plot of Mercury trajectory wrt COM
     pyplot.title('Mercury Trajectory relative to COM')
     pyplot.xlabel('x / AU')
     pyplot.ylabel('y / AU')
     pyplot.plot(positions[1, :, 0],  positions[1, :, 1])
     pyplot.show()
     
+    pyplot.title('Moon Position along x-axis (wrt the Earth) against Time')
+    pyplot.xlabel('time / days')
+    pyplot.ylabel('x / AU')
+    pyplot.plot(times, positions[3, :, 0] - positions[2, :, 0])
+    pyplot.show()
 
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
 # not when you just import it from another python file.
 if __name__ == "__main__":
     main()
-
