@@ -1,0 +1,202 @@
+"""
+TODO: Update this module docstring to explain the overall purpose of this
+script.
+
+Author: AIMAN MOHD YUZMANIZEIL
+Number: s2229553
+"""
+import numpy as np
+import matplotlib.pyplot as pyplot
+from particle3D import Particle3D
+
+# TODO: Add your basic functions here, or import them from another python file.
+def compute_separations(particles):
+    '''
+    Function to calculate separation distance between particles and store in
+    (n,n,3) shape array, n denotes number of particles.
+
+    Parameters
+    ----------
+    particles : list of particle3D classes
+        contains all particles in the system
+
+    Returns
+    -------
+    separation_array : ndarray
+        separation vector from i-th particle to j-th particle
+
+    '''
+    separation_array = np.zeros((len(particles), len(particles), 3))
+    
+    for i in range(len(particles)):
+        for j in range(len(particles)):
+            if i >= j:    #considering the 'upper triangle' elements as we're using the fact that r_ij = - r_ji
+                separation     = particles[i].position - particles[j].position  #calculating r_ij
+                separation_opp = - separation   #r_ji is opposite of the previous variable
+                separation_array[i,j] = separation   #the element in the 'upper triangle' position
+                separation_array[j,i] = separation_opp  #automatically plugging in the opposite element in the array
+        
+    return separation_array
+
+def compute_forces_potential(particles, separations):
+    '''
+    Function 1) to calculate force acting on each particle and store in (n,3) shape array, 
+    2) to calculate the total potential energy of the system.
+
+    Parameters
+    ----------
+    particles : list of particle3D classes
+        contains all particles in the system
+    separations : ndarray
+        contains separation vectors between all particles
+
+    Returns
+    -------
+    force_array : ndarray
+        contains force vectors on all particles due to interaction with other particles
+    np.sum(potential_list)/2 : float
+        total potential energy of the system
+
+    '''
+    G = 8.887692593e-10          #gravitational constant in units of AU^3 * (Earth Mass)^-1 * (day)^(-2)
+    
+    force_array     = np.zeros((len(particles),3))    #empty zeros array for force on all particles
+    potential_list  = []                #empty list to store potential energy
+    
+    for i in range(len(particles)):         #fixing first index i
+        force_array_i   = np.zeros((len(particles), 3))   #empty zeros array for force due to j acting on particle i
+        for j in range(len(particles)):     #fixing second index j
+            if i != j:                      #condition to not take force/potential on itself
+            
+                norm_separation = np.linalg.norm(separations[i][j])
+                force = - G * particles[i].mass * particles[j].mass * separations[i][j] / (norm_separation ** 3) 
+                force_array_i[j] = force #force on i due to a particle j
+                
+                potential = - G * particles[i].mass * particles[j].mass / norm_separation
+                potential_list.append(potential) #potential of system consisting of particles i and j
+            
+        force_array[i] = np.sum(force_array_i, axis = 0)   #summing up the force vectors on i due to all j
+                       
+    return force_array, np.sum(potential_list)/2    #second output returns sum of all potential divided
+                                                    #by 2 to avoid double counting
+
+
+def generate_simple_solar_system():
+    # This is a smaller test set of particles to use in tests.
+    particles = [
+        Particle3D('Sun', 332946.0, np.array([0.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0])),
+        Particle3D('Mercury', 0.055, np.array([0.08051955462645541, -0.4480662860374615, -0.04400182149190969 ]), np.array([0.02204825304859444, 0.00641708881027627, -0.00149796026125163])),
+        Particle3D('Earth', 1.0, np.array([-0.4858557302072681, -0.8881256929389151, 4.644518255972374e-05]), np.array([0.01482059753079534, -0.008322015184828249, 8.879147180855189e-08])),
+        Particle3D('Moon', 0.0123, np.array([-0.4863273339804307, -0.8855079737558565, 0.0002690858287502895]), np.array([0.01425788196666878, -0.008404177858858091, 2.210145855707591e-05]) ),
+    ]
+    return particles
+
+
+def main():
+    # Set up simulation parameters:
+    # about 10 years of simulation with 1 day timesteps
+    dt = 1.0  
+    numstep = 3650
+
+    # Initial conditions of the system
+    particles = generate_simple_solar_system()
+    time = 0.0
+
+    # TODO: subtract the centre-of-mass velocity
+    v_com = Particle3D.com_velocity(particles)
+    for p in particles:
+        p.velocity = p.velocity - v_com
+
+    # Initialise arrays that we will store results in
+    n = len(particles)
+    times = np.zeros(numstep)
+    energy = np.zeros(numstep)
+    positions = np.zeros((n, numstep, 3))
+
+    # TODO: compute initial forces for first loop iteration
+    separations           = compute_separations(particles)
+    forces, potential     = compute_forces_potential(particles, separations)
+
+    # Main time integration loop
+    for i in range(numstep):
+        times[i] = time
+        time += dt
+
+        # TODO: update all particle positions
+        for p in range(len(particles)):
+            particles[p].update_position_2nd(dt, forces[p])
+        
+            # TODO: store particle positions in array
+            positions[p][i] = particles[p].position
+            
+        # TODO: get new separations and new forces on all particles, and the potential
+        separations_2 = compute_separations(particles)
+        forces_2, potential_2 = compute_forces_potential(particles, separations_2)
+        
+        # TODO: update all particle velocities
+        for p in range(len(particles)):
+            particles[p].update_velocity(dt, 0.5 * (forces[p] + forces_2[p]))
+        # TODO: replace forces with new forces for next iteration
+        forces = forces_2
+        # TODO: compute the kinetic energy and save the total energy
+        kinetic_energy = Particle3D.total_kinetic_energy(particles)
+        energy[i] = potential_2 + kinetic_energy
+
+        
+    # Make two plots, of the Mercury - Sun x distance,
+    # and of the trajectory x-vs-y of the Earth's orbit.
+    pyplot.title('Mercury-Sun Location')
+    pyplot.xlabel('time / days')
+    pyplot.ylabel('x / AU')
+    pyplot.plot(times, positions[1, :, 0] - positions[0, :, 0])
+    pyplot.show()
+
+    pyplot.title('Earth Trajectory')
+    pyplot.xlabel('x / AU')
+    pyplot.ylabel('y / AU')
+    pyplot.plot(positions[2, :, 0],  positions[2, :, 1])
+    pyplot.show()
+
+    pyplot.title('Total Energy')
+    pyplot.ylabel('x / days')
+    pyplot.ylabel('Energy / M_earth AU^2 / day^2')
+    pyplot.plot(times, energy)
+    pyplot.show()
+
+    # TODO: add a plot of the position of the sun with time
+    pyplot.title('Sun Position along x-axis against Time')
+    pyplot.xlabel('time / days')
+    pyplot.ylabel('x / AU')
+    pyplot.plot(times, positions[0, :, 0])
+    pyplot.show()
+    
+    # TODO: add a plot of the orbit of the trajectory of the moon around the earth
+    pyplot.title('Moon Trajectory around Earth')
+    pyplot.xlabel('x / AU')
+    pyplot.ylabel('y / AU')
+    pyplot.plot(positions[3, :, 0] - positions[2, :, 0], positions[3, :, 1] - positions[2, :, 1])
+    pyplot.show()
+    
+    # You can add other useful plots here to check the system.
+    pyplot.title('Orbit of Objects around Center of Mass')
+    pyplot.xlabel('x / AU')
+    pyplot.ylabel('y / AU')
+    pyplot.plot(positions[3, :, 0],  positions[3, :, 1], color = 'green')
+    pyplot.plot(positions[2, :, 0],  positions[2, :, 1], color = 'blue')
+    pyplot.plot(positions[1, :, 0],  positions[1, :, 1], color = 'black')
+    pyplot.plot(positions[0, :, 0],  positions[0, :, 1], color = 'red')
+    pyplot.show()
+    
+    pyplot.title('Mercury Trajectory relative to COM')
+    pyplot.xlabel('x / AU')
+    pyplot.ylabel('y / AU')
+    pyplot.plot(positions[1, :, 0],  positions[1, :, 1])
+    pyplot.show()
+    
+
+# This python standard code makes it so that the "main"
+# function is only called when you run the file directly,
+# not when you just import it from another python file.
+if __name__ == "__main__":
+    main()
+
