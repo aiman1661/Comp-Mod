@@ -1,6 +1,6 @@
 """
-TODO: Update this module docstring to explain the overall purpose of this
-script.
+Simulation of four astrophysical objects using functions created in Unit 1 and plotting astrophysical
+observations to compare with real simulation data.
 
 Author: AIMAN MOHD YUZMANIZEIL
 Number: s2229553
@@ -80,7 +80,6 @@ def compute_forces_potential(particles, separations):
     return force_array, np.sum(potential_list)/2    #second output returns sum of all potential divided
                                                     #by 2 to avoid double counting
 
-
 def generate_simple_solar_system():
     # This is a smaller test set of particles to use in tests.
     particles = [
@@ -98,11 +97,11 @@ def main():
     dt = 1.0  
     numstep = 3650
 
-    # Initial conditions of the system
+    # Initial conditions of the system
     particles = generate_simple_solar_system()
     time = 0.0
 
-    # TODO: subtract the centre-of-mass velocity
+    # TODO: subtract the centre-of-mass velocity
     v_com = Particle3D.com_velocity(particles)
     for p in particles:
         p.velocity = p.velocity - v_com
@@ -123,28 +122,27 @@ def main():
         time += dt
 
         # TODO: update all particle positions
-        for p in range(len(particles)):
-            particles[p].update_position_2nd(dt, forces[p])
+        for p in range(n):  #looping over all particles
+            particles[p].update_position_2nd(dt, forces[p]) #update the position of a particle p
         
-            # TODO: store particle positions in array
-            positions[p][i] = particles[p].position
+            # TODO: store particle positions in array
+            positions[p][i] = particles[p].position  #store updated position of particle p in positions array
             
         # TODO: get new separations and new forces on all particles, and the potential
-        separations_2 = compute_separations(particles)
-        forces_2, potential_2 = compute_forces_potential(particles, separations_2)
+        separations_2 = compute_separations(particles) #compute new separation distances after updating ALL particle postions
+        forces_2, potential_2 = compute_forces_potential(particles, separations_2) #new forces, potential
         
-        # TODO: update all particle velocities
-        for p in range(len(particles)):
-            particles[p].update_velocity(dt, 0.5 * (forces[p] + forces_2[p]))
-        # TODO: replace forces with new forces for next iteration
-        forces = forces_2
+        # TODO: update all particle velocities
+        for p in range(n):
+            particles[p].update_velocity(dt, 0.5 * (forces[p] + forces_2[p])) #updating particle velocities
+        # TODO: replace forces with new forces for next iteration
+        forces = forces_2 #update new force
         # TODO: compute the kinetic energy and save the total energy
-        kinetic_energy = Particle3D.total_kinetic_energy(particles)
-        energy[i] = potential_2 + kinetic_energy
+        kinetic_energy = Particle3D.total_kinetic_energy(particles) #kinetic energy of system for current iteration
+        energy[i] = potential_2 + kinetic_energy #update energy array
 
-        
     # Make two plots, of the Mercury - Sun x distance,
-    # and of the trajectory x-vs-y of the Earth's orbit.
+    # and of the trajectory x-vs-y of the Earth's orbit.
     pyplot.title('Mercury-Sun Location')
     pyplot.xlabel('time / days')
     pyplot.ylabel('x / AU')
@@ -154,10 +152,10 @@ def main():
     pyplot.title('Earth Trajectory')
     pyplot.xlabel('x / AU')
     pyplot.ylabel('y / AU')
-    pyplot.plot(0, 0, marker = '.', markersize = 40, color = 'red', label = 'Sun')
     pyplot.plot(positions[2, :, 0],  positions[2, :, 1])
     pyplot.show()
 
+    # total energy plot wrt time / days
     pyplot.title('Total Energy')
     pyplot.ylabel('x / days')
     pyplot.ylabel('Energy / M_earth AU^2 / day^2')
@@ -176,9 +174,10 @@ def main():
     pyplot.xlabel('x / AU')
     pyplot.ylabel('y / AU')
     pyplot.plot(positions[3, :, 0] - positions[2, :, 0], positions[3, :, 1] - positions[2, :, 1])
+    pyplot.plot(0, 0, marker = '.', markersize = 40, color = 'green', label = 'Earth')
     pyplot.show()
     
-    # Orbit of Particles wrt COM
+    # Orbit of Particles wrt COM
     pyplot.title('Orbit of Objects around Center of Mass')
     pyplot.xlabel('x / AU')
     pyplot.ylabel('y / AU')
@@ -195,6 +194,7 @@ def main():
     pyplot.plot(positions[1, :, 0],  positions[1, :, 1])
     pyplot.show()
     
+    # Moon oscillation around Earth
     pyplot.title('Moon Position along x-axis (wrt the Earth) against Time')
     pyplot.xlabel('time / days')
     pyplot.ylabel('x / AU')
@@ -202,7 +202,7 @@ def main():
     pyplot.show()
 
 # This python standard code makes it so that the "main"
-# function is only called when you run the file directly,
-# not when you just import it from another python file.
+# function is only called when you run the file directly,
+# not when you just import it from another python file.
 if __name__ == "__main__":
     main()
