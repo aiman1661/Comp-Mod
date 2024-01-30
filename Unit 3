@@ -7,7 +7,6 @@ Number: s2229553
 """
 import sys
 import numpy as np
-import matplotlib.pyplot as pyplot
 from particle3D import Particle3D
 
 # basic functions from unit 1
@@ -84,10 +83,10 @@ def compute_forces_potential(particles, separations):
 
 def main():
     # Read inputs from command lines
-    if len(sys.argv) != 3 :
+    if len(sys.argv) != 5 :
         print("You left out the name of the files when running.")
         print("In spyder, run like this instead:")
-        print(f"%run {sys.argv[0]} <input file name> <output file name>")
+        print(f"%run {sys.argv[0]} <input file name> <output file name> <number of steps> <time step size>")
         sys.exit(1)
     else:
         infile_name  = sys.argv[1]
@@ -110,8 +109,8 @@ def main():
     
     # Set up simulation parameters:
     # about 10 years of simulation with 1 day timesteps
-    dt = 1.0  
-    numstep = 3650
+    dt = float(sys.argv[4])  
+    numstep = int(sys.argv[3])
 
     # Initial conditions of the system
     time = 0.0
@@ -165,59 +164,6 @@ def main():
         energy[i] = potential_2 + kinetic_energy 
         
     outfile.close()    
-        
-    # Make two plots, of the Mercury - Sun x distance,
-    # and of the trajectory x-vs-y of the Earth's orbit.
-    pyplot.title('Mercury-Sun Location')
-    pyplot.xlabel('time / days')
-    pyplot.ylabel('x / AU')
-    pyplot.plot(times, positions[1, :, 0] - positions[0, :, 0])
-    pyplot.show()
-
-    pyplot.title('Earth Trajectory')
-    pyplot.xlabel('x / AU')
-    pyplot.ylabel('y / AU')
-    pyplot.plot(positions[2, :, 0],  positions[2, :, 1])
-    pyplot.show()
-
-    # total energy plot wrt time / days
-    pyplot.title('Total Energy')
-    pyplot.ylabel('x / days')
-    pyplot.ylabel('Energy / M_earth AU^2 / day^2')
-    pyplot.plot(times, energy)
-    pyplot.show()
-
-    # Plot of the position of the sun with time
-    pyplot.title('Sun Position along x-axis against Time')
-    pyplot.xlabel('time / days')
-    pyplot.ylabel('x / AU')
-    pyplot.plot(times, positions[0, :, 0])
-    pyplot.show()
-    
-    # Plot of the orbit of the trajectory of the moon around the earth
-    pyplot.title('Moon Trajectory around Earth')
-    pyplot.xlabel('x / AU')
-    pyplot.ylabel('y / AU')
-    pyplot.plot(positions[3, :, 0] - positions[2, :, 0], positions[3, :, 1] - positions[2, :, 1])
-    pyplot.plot(0, 0, marker = '.', markersize = 40, color = 'green', label = 'Earth')
-    pyplot.show()
-    
-    # Orbit of Particles wrt COM
-    pyplot.title('Orbit of Objects around Center of Mass')
-    pyplot.xlabel('x / AU')
-    pyplot.ylabel('y / AU')
-    pyplot.plot(positions[3, :, 0],  positions[3, :, 1], color = 'yellow')
-    pyplot.plot(positions[2, :, 0],  positions[2, :, 1], color = 'green')
-    pyplot.plot(positions[1, :, 0],  positions[1, :, 1], color = 'black')
-    pyplot.plot(positions[0, :, 0],  positions[0, :, 1], color = 'red')
-    pyplot.show()
-    
-    # Plot of Mercury trajectory wrt COM
-    pyplot.title('Mercury Trajectory relative to COM')
-    pyplot.xlabel('x / AU')
-    pyplot.ylabel('y / AU')
-    pyplot.plot(positions[1, :, 0],  positions[1, :, 1])
-    pyplot.show()
 
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
