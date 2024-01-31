@@ -1,6 +1,6 @@
 """
-Simulation of four astrophysical objects using functions created in Unit 1 and plotting astrophysical
-observations to compare with real simulation data.
+Improving the code from Unit 2 by allowing user to change the inputs of simulations and
+saving positions of astrophysical objects in a desired output file.
 
 Author: AIMAN MOHD YUZMANIZEIL
 Number: s2229553
