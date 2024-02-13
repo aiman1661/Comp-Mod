@@ -100,7 +100,7 @@ def energy_deviation(energy_array):
     energy_0     = energy_array[0]
     energy_ratio = np.abs(delta_energy / energy_0)
     return energy_ratio
-    
+
 def calculate_apsis(particles, positions):
     '''
     To calculate the perihelion and aphelion of each body from the Sun and also
@@ -125,21 +125,27 @@ def calculate_apsis(particles, positions):
     perihelion_list = []
     aphelion_list   = []
     
-    for p in range(n):
-        if particles[p].label == 'Sun':
-            sun = p
-        if particles[p].label == 'Earth':
-            earth = p
-        if particles[p].label == 'Moon':
-            moon = p
+    for i in range(n):
+        if particles[i].label == 'Sun':
+            sun = i
+        elif particles[i].label == 'Earth':
+            earth = i
+        elif particles[i].label == 'Moon':
+            moon = i
     
     for p in range(1,n):
-        helio_distance = np.linalg.norm(positions[sun,:,:] - positions[p,:,:], axis = 1)
-        perihelion = np.min(helio_distance)
-        aphelion   = np.max(helio_distance)
         
-        perihelion_list.append(perihelion)
-        aphelion_list.append(aphelion)
+        if particles[p].label == 'Moon':
+            perihelion_list.append(0)
+            aphelion_list.append(0)
+        
+        elif particles[p].label != 'Moon':
+            helio_distance = np.linalg.norm(positions[sun,:,:] - positions[p,:,:], axis = 1)
+            perihelion = np.min(helio_distance)
+            aphelion   = np.max(helio_distance)
+        
+            perihelion_list.append(perihelion)
+            aphelion_list.append(aphelion)
     
     geo_distance = np.linalg.norm(positions[moon,:,:] - positions[earth,:,:], axis = 1)
     perigee = np.min(geo_distance)
@@ -148,26 +154,83 @@ def calculate_apsis(particles, positions):
     return perihelion_list, aphelion_list, perigee, apogee
 
 def calculate_orbit(particles, positions, times):
+    '''
+    To compute the orbital period of each solar system body.
+
+    Parameters
+    ----------
+    particles : TYPE
+        DESCRIPTION.
+    positions : TYPE
+        DESCRIPTION.
+    times : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    orbit_list : TYPE
+        DESCRIPTION.
+
+    '''
     n = len(particles)
     orbit_list = []
     
-    perihelion_list = calculate_apsis(particles, positions)[0]
-    aphelion_list   = calculate_apsis(particles, positions)[1]
+    for i in range(n):
+        if particles[i].label == 'Earth':
+            earth = i
+        if particles[i].label == 'Moon':
+            moon = i
     
     for p in range(1,n):
-        perihelion = perihelion_list[p-1]
-        aphelion = aphelion_list[p-1]
-        semi_major_axis = (perihelion + aphelion) / 2
-        peaks, _ = find_peaks(positions[p,:,0])
         
-        if len(peaks) <= 1:
-            orbit_list.append('NaN')
-        else:
+        if particles[p].label != 'Moon':
+            peaks, _ = find_peaks(positions[p,:,0])
+        
+            if len(peaks) <= 1:
+                orbit_list.append('NaN')
+            else:
+                T = times[peaks[1]] - times[peaks[0]]
+                orbit_list.append(T)
+                
+        if particles[p].label == 'Moon':
+            peaks, _ = find_peaks(positions[moon,:,0] - positions[earth,:,0])
             T = times[peaks[1]] - times[peaks[0]]
             orbit_list.append(T)
-        
+            
     return orbit_list
 
+def pretty_print(particles, positions, times):
+    '''
+    To organise the terminal output when showing values of observables from simulation.
+
+    Parameters
+    ----------
+    particles : TYPE
+        DESCRIPTION.
+    positions : TYPE
+        DESCRIPTION.
+    times : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    '''
+    n = len(particles)
+    for p in range(n):
+        if particles[p].label == 'Moon':
+            print('Moon')
+            print(f"Perigee: {calculate_apsis(particles, positions)[2]} AU")
+            print(f"Apogee: {calculate_apsis(particles, positions)[3]} AU")
+            print(f"Orbital Period: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
+                        
+        elif particles[p].label != 'Sun':
+            print(f"{particles[p].label}")
+            print(f"Perihelion: {calculate_apsis(particles, positions)[0][p-1]} AU")
+            print(f"Aphelion: {calculate_apsis(particles, positions)[1][p-1]} AU")
+            print(f"Orbital Period: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
+        
 def main():
     # Read inputs from command lines
     if len(sys.argv) != 5 :
@@ -253,12 +316,18 @@ def main():
     outfile.close()    
           
     print(f"Energy Deviation: {energy_deviation(energy)}\n")
+    '''
     print(f"Perihelion: {calculate_apsis(particles, positions)[0]} \n")
     print(f"Aphelion: {calculate_apsis(particles, positions)[1]} \n")
     print(f"Perigee: {calculate_apsis(particles, positions)[2]} \n")
     print(f"Apogee: {calculate_apsis(particles, positions)[3]} \n")
-    print(f"Orbital Period in Earth Days: {calculate_orbit(particles, positions, times)}")
+    print(f"Orbital Period in Earth Days: {calculate_orbit(particles, positions, times)}")'''
     
+    print(f"Orbital Period in Earth Days: {calculate_orbit(particles, positions, times)}")
+    print(f"Perihelion: {calculate_apsis(particles, positions)[0]} \n")
+    print(f"Aphelion: {calculate_apsis(particles, positions)[1]} \n")
+    
+    pretty_print(particles, positions, times)
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
 # not when you just import it from another python file.
