@@ -1,12 +1,12 @@
 """
-Improving the code from Unit 2 by allowing user to change the inputs of simulations and
-saving positions of astrophysical objects in a desired output file.
+Making astrophysical observations based on Unit 3 code.
 
 Author: AIMAN MOHD YUZMANIZEIL
 Number: s2229553
 """
 import sys
 import numpy as np
+from scipy.signal import find_peaks
 from particle3D import Particle3D
 
 # basic functions from unit 1
@@ -101,22 +101,72 @@ def energy_deviation(energy_array):
     energy_ratio = np.abs(delta_energy / energy_0)
     return energy_ratio
     
-def calculate_apsis(particles, separations):
-            
+def calculate_apsis(particles, positions):
+    '''
+    To calculate the perihelion and aphelion of each body from the Sun and also
+    the Lunar perigee and apogee.
+
+    Parameters
+    ----------
+    particles : TYPE
+        DESCRIPTION.
+    positions : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    perihelion_list : TYPE
+        DESCRIPTION.
+    aphelion_list : TYPE
+        DESCRIPTION.
+
+    '''
+    n = len(particles)
     perihelion_list = []
     aphelion_list   = []
-    for p in particles:
-        if p.label == 'Sun':
-            sun = p
     
-    for p in particles:
-        perihelion = np.min(np.linalg.norm(sun.position - p.position))
-        aphelion   = np.max(np.linalg.norm(sun.position - p.position))
+    for p in range(n):
+        if particles[p].label == 'Sun':
+            sun = p
+        if particles[p].label == 'Earth':
+            earth = p
+        if particles[p].label == 'Moon':
+            moon = p
+    
+    for p in range(1,n):
+        helio_distance = np.linalg.norm(positions[sun,:,:] - positions[p,:,:], axis = 1)
+        perihelion = np.min(helio_distance)
+        aphelion   = np.max(helio_distance)
+        
         perihelion_list.append(perihelion)
         aphelion_list.append(aphelion)
-            
     
-    return [perihelion_list, aphelion_list]
+    geo_distance = np.linalg.norm(positions[moon,:,:] - positions[earth,:,:], axis = 1)
+    perigee = np.min(geo_distance)
+    apogee  = np.max(geo_distance)
+    
+    return perihelion_list, aphelion_list, perigee, apogee
+
+def calculate_orbit(particles, positions, times):
+    n = len(particles)
+    orbit_list = []
+    
+    perihelion_list = calculate_apsis(particles, positions)[0]
+    aphelion_list   = calculate_apsis(particles, positions)[1]
+    
+    for p in range(1,n):
+        perihelion = perihelion_list[p-1]
+        aphelion = aphelion_list[p-1]
+        semi_major_axis = (perihelion + aphelion) / 2
+        peaks, _ = find_peaks(positions[p,:,0])
+        
+        if len(peaks) <= 1:
+            orbit_list.append('NaN')
+        else:
+            T = times[peaks[1]] - times[peaks[0]]
+            orbit_list.append(T)
+        
+    return orbit_list
 
 def main():
     # Read inputs from command lines
@@ -201,24 +251,13 @@ def main():
         energy[i] = potential_2 + kinetic_energy 
         
     outfile.close()    
-    
-    perihelion_list = []
-    aphelion_list   = []
-    
-    for p in range(n):
-        if particles[p].label == 'Sun':
-            sun = p
-    
-    for p in range(1,n):
-        distance = np.linalg.norm(positions[sun,:,:] - positions[p,:,:], axis = 1)
-        perihelion = np.min(distance)
-        aphelion = np.max(distance)
-        perihelion_list.append(perihelion)
-        aphelion_list.append(aphelion)
-            
-    print(f"energy deviation: {energy_deviation(energy)}")
-    print(f"perihelion: {perihelion_list}")
-    print(f"aphelion: {aphelion_list}")
+          
+    print(f"Energy Deviation: {energy_deviation(energy)}\n")
+    print(f"Perihelion: {calculate_apsis(particles, positions)[0]} \n")
+    print(f"Aphelion: {calculate_apsis(particles, positions)[1]} \n")
+    print(f"Perigee: {calculate_apsis(particles, positions)[2]} \n")
+    print(f"Apogee: {calculate_apsis(particles, positions)[3]} \n")
+    print(f"Orbital Period in Earth Days: {calculate_orbit(particles, positions, times)}")
     
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
