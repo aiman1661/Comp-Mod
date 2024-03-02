@@ -6,80 +6,9 @@ Number: s2229553
 """
 import sys
 import numpy as np
+from basic_functions import compute_separations, compute_forces_potential
 from scipy.signal import find_peaks
 from particle3D import Particle3D
-
-# basic functions from unit 1
-def compute_separations(particles):
-    '''
-    Function to calculate separation distance between particles and store in
-    (n,n,3) shape array, n denotes number of particles.
-
-    Parameters
-    ----------
-    particles : list of particle3D classes
-        contains all particles in the system
-
-    Returns
-    -------
-    separation_array : ndarray
-        separation vector from i-th particle to j-th particle
-
-    '''
-    separation_array = np.zeros((len(particles), len(particles), 3))
-    
-    for i in range(len(particles)):
-        for j in range(len(particles)):
-            if i >= j:    # considering the 'upper triangle' elements as we're using the fact that r_ij = - r_ji
-                separation     = particles[i].position - particles[j].position  # calculating r_ij
-                separation_opp = - separation   # r_ji is opposite of the previous variable
-                separation_array[i,j] = separation   # element in the 'upper triangle' position
-                separation_array[j,i] = separation_opp  # automatically plugging in the opposite element in the array
-        
-    return separation_array
-
-def compute_forces_potential(particles, separations):
-    '''
-    Function 1) to calculate force acting on each particle and store in (n,3) shape array, 
-    2) to calculate the total potential energy of the system.
-
-    Parameters
-    ----------
-    particles : list of particle3D classes
-        contains all particles in the system
-    separations : ndarray
-        contains separation vectors between all particles
-
-    Returns
-    -------
-    force_array : ndarray
-        contains force vectors on all particles due to interaction with other particles
-    np.sum(potential_list)/2 : float
-        total potential energy of the system
-
-    '''
-    G = 8.887692593e-10          # gravitational constant in units of AU^3 * (Earth Mass)^-1 * (day)^(-2)
-    
-    n = len(particles)
-    force_array     = np.zeros((n,3))
-    potential_list  = []                
-    
-    for i in range(n):         # fixing first index i
-        force_array_i   = np.zeros((n, 3))   # empty zeros array for force due to j acting on particle i
-        for j in range(n):     # fixing second index j
-            if i != j:                      # condition to not take force/potential on itself
-            
-                norm_separation = np.linalg.norm(separations[i][j])
-                force = - G * particles[i].mass * particles[j].mass * separations[i][j] / (norm_separation ** 3) 
-                force_array_i[j] = force  #force on i due to a particle j
-                
-                potential = - G * particles[i].mass * particles[j].mass / norm_separation
-                potential_list.append(potential) # potential of system consisting of particles i and j
-                
-        force_array[i] = np.sum(force_array_i, axis = 0)   # summing up the force vectors on i due to all j
-                       
-    return force_array, np.sum(potential_list)/2    # second output returns sum of all potential divided
-                                                    # by 2 to avoid double counting
                                                     
 def energy_deviation(energy_array):
     '''
@@ -87,13 +16,13 @@ def energy_deviation(energy_array):
 
     Parameters
     ----------
-    energy_array : TYPE
-        DESCRIPTION.
+    energy_array : ndarray
+        array of total energy in system for all timestamps.
 
     Returns
     -------
-    energy_ratio : TYPE
-        DESCRIPTION.
+    energy_ratio : float
+        ratio of initial energy to maximum change in energy.
 
     '''
     delta_energy = np.max(energy_array) - np.min(energy_array)
@@ -108,18 +37,21 @@ def calculate_apsis(particles, positions):
 
     Parameters
     ----------
-    particles : TYPE
-        DESCRIPTION.
-    positions : TYPE
-        DESCRIPTION.
+    particles : list of Particle3D classes
+        contains all particles in system.
+    positions : ndarray
+        array of positions of particles.
 
     Returns
     -------
-    perihelion_list : TYPE
-        DESCRIPTION.
-    aphelion_list : TYPE
-        DESCRIPTION.
-
+    perihelion_list : list
+        list of perihelion of particles.
+    aphelion_list : list
+        list of aphelion of particles.
+    perigee : float
+        value of lunar perigee.
+    apogee : float
+        value of lunar apogee.
     '''
     n = len(particles)
     perihelion_list = []
@@ -133,14 +65,14 @@ def calculate_apsis(particles, positions):
         elif particles[i].label == 'Moon':
             moon = i
     
-    for p in range(1,n):
+    for i in range(1,n):
         
-        if particles[p].label == 'Moon':
+        if particles[i].label == 'Moon':
             perihelion_list.append(0)
             aphelion_list.append(0)
         
-        elif particles[p].label != 'Moon':
-            helio_distance = np.linalg.norm(positions[sun,:,:] - positions[p,:,:], axis = 1)
+        elif particles[i].label != 'Moon':
+            helio_distance = np.linalg.norm(positions[sun,:,:] - positions[i,:,:], axis = 1)
             perihelion = np.min(helio_distance)
             aphelion   = np.max(helio_distance)
         
@@ -159,17 +91,17 @@ def calculate_orbit(particles, positions, times):
 
     Parameters
     ----------
-    particles : TYPE
-        DESCRIPTION.
-    positions : TYPE
-        DESCRIPTION.
-    times : TYPE
-        DESCRIPTION.
+    particles : list of Particle3D classes
+        contains all particles in system.
+    positions : ndarray
+        array of positions of particles.
+    times : ndarray
+        array containing timestamps.
 
     Returns
     -------
-    orbit_list : TYPE
-        DESCRIPTION.
+    orbit_list : list
+        list containing the orbital period of particles.
 
     '''
     n = len(particles)
@@ -184,12 +116,12 @@ def calculate_orbit(particles, positions, times):
     for p in range(1,n):
         
         if particles[p].label != 'Moon':
-            peaks, _ = find_peaks(positions[p,:,0])
+            peaks_x, _ = find_peaks(positions[p,:,0])
         
-            if len(peaks) <= 1:
+            if len(peaks_x) <= 1:
                 orbit_list.append('NaN')
             else:
-                T = times[peaks[1]] - times[peaks[0]]
+                T = times[peaks_x[1]] - times[peaks_x[0]]
                 orbit_list.append(T)
                 
         if particles[p].label == 'Moon':
@@ -205,12 +137,12 @@ def pretty_print(particles, positions, times):
 
     Parameters
     ----------
-    particles : TYPE
-        DESCRIPTION.
-    positions : TYPE
-        DESCRIPTION.
-    times : TYPE
-        DESCRIPTION.
+    particles : list of Particle3D classes
+        contains all particles in system
+    positions : ndarray
+        array of positions of particles.
+    times : ndarray
+        array containing timestamps.
 
     Returns
     -------
@@ -314,19 +246,13 @@ def main():
         energy[i] = potential_2 + kinetic_energy 
         
     outfile.close()    
-          
-    print(f"Energy Deviation: {energy_deviation(energy)}\n")
+       
+    print(f"Energy Deviation: {energy_deviation(energy)}\n")  
     '''
-    print(f"Perihelion: {calculate_apsis(particles, positions)[0]} \n")
-    print(f"Aphelion: {calculate_apsis(particles, positions)[1]} \n")
-    print(f"Perigee: {calculate_apsis(particles, positions)[2]} \n")
-    print(f"Apogee: {calculate_apsis(particles, positions)[3]} \n")
-    print(f"Orbital Period in Earth Days: {calculate_orbit(particles, positions, times)}")'''
-    
     print(f"Orbital Period in Earth Days: {calculate_orbit(particles, positions, times)}")
     print(f"Perihelion: {calculate_apsis(particles, positions)[0]} \n")
     print(f"Aphelion: {calculate_apsis(particles, positions)[1]} \n")
-    
+    '''
     pretty_print(particles, positions, times)
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
