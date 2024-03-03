@@ -23,10 +23,9 @@ def energy_deviation(energy_array):
     -------
     energy_ratio : float
         ratio of initial energy to maximum change in energy.
-
     '''
-    delta_energy = np.max(energy_array) - np.min(energy_array)
-    energy_0     = energy_array[0]
+    delta_energy = np.max(energy_array) - np.min(energy_array) # Maximum change in energy
+    energy_0     = energy_array[0] # Initial energy
     energy_ratio = np.abs(delta_energy / energy_0)
     return energy_ratio
 
@@ -57,6 +56,7 @@ def calculate_apsis(particles, positions):
     perihelion_list = []
     aphelion_list   = []
     
+    # Setting variables as specific particles
     for i in range(n):
         if particles[i].label == 'Sun':
             sun = i
@@ -65,12 +65,12 @@ def calculate_apsis(particles, positions):
         elif particles[i].label == 'Moon':
             moon = i
     
-    for i in range(1,n):
-        
-        if particles[i].label == 'Moon':
+    for i in range(1,n): # Given that we have restricted our Sun to always be the first in the particle list
+        if particles[i].label == 'Moon': # Refer to the pretty_print() function
             perihelion_list.append(0)
-            aphelion_list.append(0)
+            aphelion_list.append(0) 
         
+        # Calculate aphelia of particles except the Moon
         elif particles[i].label != 'Moon':
             helio_distance = np.linalg.norm(positions[sun,:,:] - positions[i,:,:], axis = 1)
             perihelion = np.min(helio_distance)
@@ -79,6 +79,7 @@ def calculate_apsis(particles, positions):
             perihelion_list.append(perihelion)
             aphelion_list.append(aphelion)
     
+    # Distance between Moon and Earth
     geo_distance = np.linalg.norm(positions[moon,:,:] - positions[earth,:,:], axis = 1)
     perigee = np.min(geo_distance)
     apogee  = np.max(geo_distance)
@@ -107,23 +108,29 @@ def calculate_orbit(particles, positions, times):
     n = len(particles)
     orbit_list = []
     
+    # Setting variables as specific particles
     for i in range(n):
         if particles[i].label == 'Earth':
             earth = i
         if particles[i].label == 'Moon':
             moon = i
     
-    for p in range(1,n):
+    for p in range(1,n): # Given that we have restricted our Sun to always be the first in the particle list
         
+        # For particles other than Moon, find the peaks in their positions from the Sun for all times
         if particles[p].label != 'Moon':
             peaks_x, _ = find_peaks(positions[p,:,0])
         
+            # Returns 'NaN' when there's not enough data to compute period
             if len(peaks_x) <= 1:
                 orbit_list.append('NaN')
+                
+            # Period is given by time taken for particle to traverse between positions of max distance from Sun
             else:
                 T = times[peaks_x[1]] - times[peaks_x[0]]
                 orbit_list.append(T)
-                
+        
+        # Same method as before, but now for Moon orbiting the Earth
         if particles[p].label == 'Moon':
             peaks, _ = find_peaks(positions[moon,:,0] - positions[earth,:,0])
             T = times[peaks[1]] - times[peaks[0]]
@@ -151,17 +158,19 @@ def pretty_print(particles, positions, times):
     '''
     n = len(particles)
     for p in range(n):
+        
+        # We will remove the irrelevant aphelion, perihelion data for Moon
         if particles[p].label == 'Moon':
             print('Moon')
             print(f"Perigee: {calculate_apsis(particles, positions)[2]} AU")
             print(f"Apogee: {calculate_apsis(particles, positions)[3]} AU")
-            print(f"Orbital Period: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
+            print(f"Orbital Period around Earth: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
                         
         elif particles[p].label != 'Sun':
             print(f"{particles[p].label}")
             print(f"Perihelion: {calculate_apsis(particles, positions)[0][p-1]} AU")
             print(f"Aphelion: {calculate_apsis(particles, positions)[1][p-1]} AU")
-            print(f"Orbital Period: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
+            print(f"Orbital Period around Sun: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
         
 def main():
     # Read inputs from command lines
@@ -247,6 +256,7 @@ def main():
         
     outfile.close()    
        
+    print("\n If the value of orbital period is 'NaN', then the values of peri/aphelion are not to be trusted. \n")
     print(f"Energy Deviation: {energy_deviation(energy)}\n")  
     '''
     print(f"Orbital Period in Earth Days: {calculate_orbit(particles, positions, times)}")
