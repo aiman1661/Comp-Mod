@@ -254,7 +254,7 @@ def main():
         kinetic_energy = Particle3D.total_kinetic_energy(particles)
         energy[i] = potential_2 + kinetic_energy 
         
-    outfile.close()    
+    outfile.close()
        
     print("\n If the value of orbital period is 'NaN', then the values of peri/aphelion are not to be trusted. Try 120000 for number of steps, this will give a more accurate result. \n")
     print(f"Energy Deviation: {energy_deviation(energy)}\n")
