@@ -256,13 +256,8 @@ def main():
         
     outfile.close()    
        
-    print("\n If the value of orbital period is 'NaN', then the values of peri/aphelion are not to be trusted. \n")
-    print(f"Energy Deviation: {energy_deviation(energy)}\n")  
-    '''
-    print(f"Orbital Period in Earth Days: {calculate_orbit(particles, positions, times)}")
-    print(f"Perihelion: {calculate_apsis(particles, positions)[0]} \n")
-    print(f"Aphelion: {calculate_apsis(particles, positions)[1]} \n")
-    '''
+    print("\n If the value of orbital period is 'NaN', then the values of peri/aphelion are not to be trusted. Try 120000 for number of timesteps. \n")
+    print(f"Energy Deviation: {energy_deviation(energy)}\n")
     pretty_print(particles, positions, times)
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
