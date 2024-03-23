@@ -6,6 +6,7 @@ Number: s2229553
 """
 import sys
 import numpy as np
+import matplotlib.pyplot as pyplot
 from basic_functions import compute_separations, compute_forces_potential
 from scipy.signal import find_peaks
 from particle3D import Particle3D
@@ -308,6 +309,14 @@ def main():
     print("\n If the value of orbital period is 'NaN', then the values of peri/aphelion are not to be trusted. Try 120000 for number of steps (dt = 1), this will give a more accurate result. \n")
     print(f"Energy Deviation: {energy_deviation(energy)}\n")
     pretty_print(particles, positions, times)
+    
+    # Orbit of Particles wrt COM
+    pyplot.title('Orbit of Objects around Center of Mass')
+    pyplot.xlabel('x / AU')
+    pyplot.ylabel('y / AU')
+    for i in range(n):
+        pyplot.plot(positions[i, :, 0],  positions[i, :, 1])
+    pyplot.show()
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
 # not when you just import it from another python file.
