@@ -1,0 +1,315 @@
+"""
+Making astrophysical observations and verifying Kepler's third law.
+
+Author: AIMAN MOHD YUZMANIZEIL
+Number: s2229553
+"""
+import sys
+import numpy as np
+from basic_functions import compute_separations, compute_forces_potential
+from scipy.signal import find_peaks
+from particle3D import Particle3D
+                                                    
+def energy_deviation(energy_array):
+    '''
+    To calculate the energy deviation in the simulation.
+
+    Parameters
+    ----------
+    energy_array : ndarray
+        array of total energy in system for all timestamps.
+
+    Returns
+    -------
+    energy_ratio : float
+        ratio of initial energy to maximum change in energy.
+    '''
+    delta_energy = np.max(energy_array) - np.min(energy_array) # Maximum change in energy
+    energy_0     = energy_array[0] # Initial energy
+    energy_ratio = np.abs(delta_energy / energy_0)
+    return energy_ratio
+
+def calculate_apsis(particles, positions):
+    '''
+    To calculate the perihelion and aphelion of each body from the Sun and also
+    the Lunar perigee and apogee.
+
+    Parameters
+    ----------
+    particles : list of Particle3D classes
+        contains all particles in system.
+    positions : ndarray
+        array of positions of particles.
+
+    Returns
+    -------
+    perihelion_list : list
+        list of perihelion of particles.
+    aphelion_list : list
+        list of aphelion of particles.
+    perigee : float
+        value of lunar perigee.
+    apogee : float
+        value of lunar apogee.
+    '''
+    n = len(particles)
+    perihelion_list = []
+    aphelion_list   = []
+    
+    # Setting variables as specific particles
+    for i in range(n):
+        if particles[i].label == 'Sun':
+            sun = i
+        elif particles[i].label == 'Earth':
+            earth = i
+        elif particles[i].label == 'Moon':
+            moon = i
+    
+    for i in range(1,n): # Given that we have restricted our Sun to always be the first in the particle list
+        if particles[i].label == 'Moon': # Refer to the pretty_print() function
+            perihelion_list.append(0)
+            aphelion_list.append(0) 
+        
+        # Calculate aphelia of particles except the Moon
+        elif particles[i].label != 'Moon':
+            helio_distance = np.linalg.norm(positions[sun,:,:] - positions[i,:,:], axis = 1)
+            perihelion = np.min(helio_distance)
+            aphelion   = np.max(helio_distance)
+        
+            perihelion_list.append(perihelion)
+            aphelion_list.append(aphelion)
+    
+    # Distance between Moon and Earth
+    geo_distance = np.linalg.norm(positions[moon,:,:] - positions[earth,:,:], axis = 1)
+    perigee = np.min(geo_distance)
+    apogee  = np.max(geo_distance)
+    
+    return perihelion_list, aphelion_list, perigee, apogee
+
+def calculate_orbit(particles, positions, times):
+    '''
+    To compute the orbital period of each solar system body.
+
+    Parameters
+    ----------
+    particles : list of Particle3D classes
+        contains all particles in system.
+    positions : ndarray
+        array of positions of particles.
+    times : ndarray
+        array containing timestamps.
+
+    Returns
+    -------
+    orbit_list : list
+        list containing the orbital period of particles.
+
+    '''
+    n = len(particles)
+    orbit_list = []
+    
+    # Setting variables as specific particles
+    for i in range(n):
+        if particles[i].label == 'Earth':
+            earth = i
+        if particles[i].label == 'Moon':
+            moon = i
+    
+    for p in range(1,n): # Given that we have restricted our Sun to always be the first in the particle list
+        
+        # For particles other than Moon, find the peaks in their positions from the Sun for all times
+        if particles[p].label != 'Moon':
+            peaks_x, _ = find_peaks(positions[p,:,0])
+        
+            # Returns 'NaN' when there's not enough data to compute period
+            if len(peaks_x) <= 1:
+                orbit_list.append('NaN')
+                
+            # Period is given by time taken for particle to traverse between positions of max distance from Sun
+            else:
+                T = times[peaks_x[1]] - times[peaks_x[0]]
+                orbit_list.append(T)
+        
+        # Same method as before, but now for Moon orbiting the Earth
+        if particles[p].label == 'Moon':
+            peaks, _ = find_peaks(positions[moon,:,0] - positions[earth,:,0])
+            T = times[peaks[1]] - times[peaks[0]]
+            orbit_list.append(T)
+            
+    return orbit_list
+
+def pretty_print(particles, positions, times):
+    '''
+    To organise the terminal output when showing values of observables from simulation.
+
+    Parameters
+    ----------
+    particles : list of Particle3D classes
+        contains all particles in system
+    positions : ndarray
+        array of positions of particles.
+    times : ndarray
+        array containing timestamps.
+
+    Returns
+    -------
+    None.
+
+    '''
+    n = len(particles)
+    for p in range(n):
+        
+        # We will remove the irrelevant aphelion, perihelion data for Moon
+        if particles[p].label == 'Moon':
+            print('Moon')
+            print(f"Perigee: {calculate_apsis(particles, positions)[2]} AU")
+            print(f"Apogee: {calculate_apsis(particles, positions)[3]} AU")
+            print(f"Orbital Period around Earth: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
+                        
+        elif particles[p].label != 'Sun':
+            print(f"{particles[p].label}")
+            print(f"Perihelion: {calculate_apsis(particles, positions)[0][p-1]} AU")
+            print(f"Aphelion: {calculate_apsis(particles, positions)[1][p-1]} AU")
+            print(f"Orbital Period around Sun: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
+            
+def pretty_output(outfileO, energy, particles, positions, times):
+    '''
+    To store observables in output file.
+
+    Parameters
+    ----------
+    outfileO : file
+        name of output file
+    energy : ndarray
+        array containing energies at all time.
+    particles : list of Particle3D classes
+        contains all particles in system
+    positions : ndarray
+        array of positions of particles.
+    times : ndarray
+        array containing timestamps.
+
+    Returns
+    -------
+    None.
+
+    '''
+    n = len(particles)
+    
+    # Energy deviation
+    outfileO.write(f"Energy Deviation: {energy_deviation(energy)}\n")
+    
+    for p in range(n):
+        
+        # We will remove the irrelevant aphelion, perihelion data for Moon
+        if particles[p].label == 'Moon':
+            outfileO.write('Moon \n')
+            outfileO.write(f"Perigee: {calculate_apsis(particles, positions)[2]} AU \n")
+            outfileO.write(f"Apogee: {calculate_apsis(particles, positions)[3]} AU \n")
+            outfileO.write(f"Orbital Period around Earth: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
+                        
+        elif particles[p].label != 'Sun':
+            outfileO.write(f"{particles[p].label} \n")
+            outfileO.write(f"Perihelion: {calculate_apsis(particles, positions)[0][p-1]} AU \n")
+            outfileO.write(f"Aphelion: {calculate_apsis(particles, positions)[1][p-1]} AU \n")
+            outfileO.write(f"Orbital Period around Sun: {calculate_orbit(particles, positions, times)[p-1]} Days\n")
+        
+def main():
+    # Read inputs from command lines
+    if len(sys.argv) != 6 :
+        print("You left out the name of the files when running.")
+        print("In spyder, run like this instead:")
+        print(f"%run {sys.argv[0]} <input file name> <output file name> <observables output file name> <number of steps> <time step size>")
+        sys.exit(1)
+    else:
+        infile_name  = sys.argv[1]
+        outfile_name = sys.argv[2]
+        outfileO_name = sys.argv[3]
+    
+    # Reading lines from input file    
+    infile         = open(infile_name, 'r')
+    lines_list     = infile.readlines()   
+    
+    # Opening output files
+    outfile  = open(outfile_name, 'w')
+    outfileO = open(outfileO_name, 'w')
+    
+    # Creating list of solar system
+    particles = []
+    for line in lines_list:
+        particle = Particle3D.read_line(line)         
+        particles.append(particle)
+    
+    infile.close()
+    
+    # Set up simulation parameters:
+    # about 10 years of simulation with 1 day timesteps
+    dt = float(sys.argv[5])  
+    numstep = int(sys.argv[4])
+
+    # Initial conditions of the system
+    time = 0.0
+
+    # Subtract the centre-of-mass velocity from each particle
+    v_com = Particle3D.com_velocity(particles)
+    for p in particles:
+        p.velocity = p.velocity - v_com
+
+    # Initialise arrays that we will store results in
+    n = len(particles)
+    times = np.zeros(numstep)
+    energy = np.zeros(numstep)
+    positions = np.zeros((n, numstep, 3))
+
+    # Compute initial forces for first loop iteration
+    separations           = compute_separations(particles)
+    forces, potential     = compute_forces_potential(particles, separations)
+    
+    # Main time integration loop
+    for i in range(numstep):
+        # Stating number of particles
+        outfile.write(f"{n}\n")
+        outfile.write(f"Point = {i} \n")
+        
+        # Setting time for current iteration
+        times[i] = time
+        time += dt
+        
+        # Update all particle positions
+        for p in range(n):  
+            particles[p].update_position_2nd(dt, forces[p]) 
+        
+            # Store particle positions in array and output file
+            positions[p][i] = particles[p].position
+            outfile.write(f"{str(particles[p])} \n")
+            
+        # Get new separations and new forces on all particles, and the potential
+        separations_2         = compute_separations(particles)
+        forces_2, potential_2 = compute_forces_potential(particles, separations_2) 
+        
+        # Update all particle velocities
+        for p in range(n):
+            particles[p].update_velocity(dt, 0.5 * (forces[p] + forces_2[p])) 
+            
+        # Replace forces with new forces for next iteration
+        forces = forces_2
+        
+        # Compute the kinetic energy and save the total energy
+        kinetic_energy = Particle3D.total_kinetic_energy(particles)
+        energy[i] = potential_2 + kinetic_energy 
+        
+        
+    # Write observables in output file
+    pretty_output(outfileO, energy, particles, positions, times)
+    
+    outfileO.close()
+    outfile.close()
+       
+    print("\n If the value of orbital period is 'NaN', then the values of peri/aphelion are not to be trusted. Try 120000 for number of steps (dt = 1), this will give a more accurate result. \n")
+    print(f"Energy Deviation: {energy_deviation(energy)}\n")
+    pretty_print(particles, positions, times)
+# This python standard code makes it so that the "main"
+# function is only called when you run the file directly,
+# not when you just import it from another python file.
+if __name__ == "__main__":
+    main()
