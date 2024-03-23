@@ -317,6 +317,20 @@ def main():
     for i in range(n):
         pyplot.plot(positions[i, :, 0],  positions[i, :, 1])
     pyplot.show()
+    
+    pyplot.title('Orbit of Objects around Center of Mass (Inner Solar System)')
+    pyplot.xlabel('x / AU')
+    pyplot.ylabel('y / AU')
+    for i in range(6):
+        pyplot.plot(positions[i, :, 0],  positions[i, :, 1])
+    pyplot.show()
+    
+    pyplot.title('Orbit of Objects around Center of Mass (Outer Solar System)')
+    pyplot.xlabel('x / AU')
+    pyplot.ylabel('y / AU')
+    for i in range(6,n):
+        pyplot.plot(positions[i, :, 0],  positions[i, :, 1])
+    pyplot.show()
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
 # not when you just import it from another python file.
