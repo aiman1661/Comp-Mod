@@ -140,19 +140,57 @@ def calculate_orbit(particles, positions, times):
     return orbit_list
 
 def calculate_semi_major_axis(particles, positions):
+    '''
+    To calculate the semi-major axis of particles' orbit.
+
+    Parameters
+    ----------
+    particles : list of Particle3D classes
+        contains all particles in system.
+    positions : ndarray
+        array of positions of particles.
+
+    Returns
+    -------
+    semi_major_axis : ndarray
+        array of semi-major axis corresponding to each particle in the particles list.
+
+    '''
     perihelion, aphelion, _, _ = calculate_apsis(particles, positions)
     
+    # Removing the 0 due to the Moon's non-existant perihelion, aphelion
     perihelion.pop(3)
     aphelion.pop(3)
                                   
     peri_array = np.array(perihelion)
     aphe_array = np.array(aphelion)
+    
+    # Semi-major axis given by the average of aphelion and perihelion
     semi_major_axis = (1/2) * (peri_array + aphe_array)
     return semi_major_axis
 
 def orbit_no_moon(particles, positions, times):
+    '''
+    To calculate the orbital period of particles in the system, without the moon.
+
+    Parameters
+    ----------
+    particles : list of Particle3D classes
+        contains all particles in system.
+    positions : ndarray
+        array of positions of particles.
+    times : ndarray
+        array containing timestamps.
+
+    Returns
+    -------
+    ndarray
+        array containing orbital period.
+
+    '''
     orbit_list = calculate_orbit(particles, positions, times)
     
+    # Removing the Moon's orbit
     orbit_list.pop(3)
     
     float_list = []
@@ -332,7 +370,7 @@ def main():
     print(f"Energy Deviation: {energy_deviation(energy)}\n")
     pretty_print(particles, positions, times)
     
-    # Orbit of Particles wrt COM
+    # Orbit of Particles wrt COM 
     pyplot.title('Orbit of Objects around Center of Mass')
     pyplot.xlabel('x / AU')
     pyplot.ylabel('y / AU')
@@ -340,6 +378,7 @@ def main():
         pyplot.plot(positions[i, :, 0],  positions[i, :, 1])
     pyplot.show()
     
+    # Orbit of Particles (Inner Solar System) wrt COM 
     pyplot.title('Orbit of Objects around Center of Mass (Inner Solar System)')
     pyplot.xlabel('x / AU')
     pyplot.ylabel('y / AU')
@@ -347,6 +386,7 @@ def main():
         pyplot.plot(positions[i, :, 0],  positions[i, :, 1])
     pyplot.show()
     
+    # Orbit of Particles (Outer Solar System) wrt COM 
     pyplot.title('Orbit of Objects around Center of Mass (Outer Solar System)')
     pyplot.xlabel('x / AU')
     pyplot.ylabel('y / AU')
