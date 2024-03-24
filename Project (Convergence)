@@ -1,10 +1,10 @@
 """
-Programme to read files containing data from computational experiment and make accuracy comparisons
-between time integrators with different parameters. In this case, we consider the accuracy when the parameters
-dt and step number are changed, and we measure this in terms of the energy and frequency inaccuracies and 
-display the plots for the comparisons. Then, we determine the best dt for our experimental simulation.
+Programme to read files containing data from computational experiment and make convergence measurements based
+on observables (perihelion, aphelion, orbital period). In this case, we vary the parameters dt and step number,
+and we measure the convergence in terms of the energy and observables of different planets and 
+display the plots for comparison. Then, we determine the best dt for our experimental simulation.
 
-@author: AIMAN MOHD YUZMANIZEIL
+author: AIMAN MOHD YUZMANIZEIL
 number : s2229553
 """
 
@@ -60,6 +60,7 @@ def main():
         token_first = first_line.split()
         energy_ratio.append(float(token_first[2]))
         
+        # Sorting particle name and their observables in different lists
         for i in range(3):
             particle_line = lines[4*i + 1]
             particles.append(str(particle_line))
@@ -102,32 +103,33 @@ def main():
         
         particle = particles[i]
         
-        outfile.write(f"\n {particle} <perihelion_inaccuracy> <perihelion_percentage_inaccuracy> \n ") #formatting output file
+        # Same procedure as in the 2nd previous comments for energy_ratio
+        outfile.write(f"\n {particle} <perihelion_inaccuracy> <perihelion_percentage_inaccuracy> \n ") 
         ratio_peri      = []
         percentage_peri = []
         for n in range(5):
-            p_ratio      = np.abs(observable_ratio(peri_0, perihelion[3*n+i]))            #taking absolute value of energy inaccuracy
-            p_percentage = p_ratio * 100        #convert to percentage
+            p_ratio      = np.abs(observable_ratio(peri_0, perihelion[3*n+i]))            
+            p_percentage = p_ratio * 100        
             outfile.write(f"{p_ratio} {p_percentage}%\n")
             ratio_peri.append(p_ratio)
             percentage_peri.append(p_percentage)
     
-        outfile.write(f"\n {particle} <aphelion_inaccuracy> <aphelion_percentage_inaccuracy> \n ") #formatting output file
+        outfile.write(f"\n {particle} <aphelion_inaccuracy> <aphelion_percentage_inaccuracy> \n ")
         ratio_aphe      = []
         percentage_aphe = []
         for n in range(5):
-            p_ratio      = np.abs(observable_ratio(aphe_0, aphelion[3*n+i]))            #taking absolute value of energy inaccuracy
-            p_percentage = p_ratio * 100        #convert to percentage
+            p_ratio      = np.abs(observable_ratio(aphe_0, aphelion[3*n+i]))            
+            p_percentage = p_ratio * 100        
             outfile.write(f"{p_ratio} {p_percentage}%\n")
             ratio_aphe.append(p_ratio)
             percentage_aphe.append(p_percentage)
             
-        outfile.write(f"\n {particle} <period_inaccuracy> <period_percentage_inaccuracy> \n ") #formatting output file
+        outfile.write(f"\n {particle} <period_inaccuracy> <period_percentage_inaccuracy> \n ") 
         ratio_period     = []
         percentage_period = []
         for n in range(5):
-            p_ratio      = np.abs(observable_ratio(period_0, period[3*n+i]))            #taking absolute value of energy inaccuracy
-            p_percentage = p_ratio * 100        #convert to percentage
+            p_ratio      = np.abs(observable_ratio(period_0, period[3*n+i]))            
+            p_percentage = p_ratio * 100        
             outfile.write(f"{p_ratio} {p_percentage}%\n")
             ratio_period.append(p_ratio)
             percentage_period.append(p_percentage)
