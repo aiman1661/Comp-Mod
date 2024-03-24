@@ -139,6 +139,29 @@ def calculate_orbit(particles, positions, times):
             
     return orbit_list
 
+def calculate_semi_major_axis(particles, positions):
+    perihelion, aphelion, _, _ = calculate_apsis(particles, positions)
+    
+    perihelion.pop(3)
+    aphelion.pop(3)
+                                  
+    peri_array = np.array(perihelion)
+    aphe_array = np.array(aphelion)
+    semi_major_axis = (1/2) * (peri_array + aphe_array)
+    return semi_major_axis
+
+def orbit_no_moon(particles, positions, times):
+    orbit_list = calculate_orbit(particles, positions, times)
+    
+    orbit_list.pop(3)
+    
+    float_list = []
+    for val in orbit_list:
+        float_list.append(float(val))
+    
+    return np.array(float_list)
+    
+
 def pretty_print(particles, positions, times):
     '''
     To organise the terminal output when showing values of observables from simulation.
@@ -331,6 +354,42 @@ def main():
     for i in range(6,n):
         pyplot.plot(positions[i, :, 0],  positions[i, :, 1])
     pyplot.show()
+    
+    print(calculate_semi_major_axis(particles, positions))
+    print(orbit_no_moon(particles, positions, times))
+    
+    pyplot.title('Orbital period against semi major axis')
+    pyplot.xlabel('a / AU')
+    pyplot.ylabel('T / AU')
+    pyplot.plot(calculate_semi_major_axis(particles, positions), orbit_no_moon(particles, positions, times), marker = 'x')
+    pyplot.show()
+    
+    pyplot.title('Orbital period squared against semi major axis cubed')
+    pyplot.xlabel('a^3 / AU^3')
+    pyplot.ylabel('T^2 / AU^2')
+    slope1, intercept1 = np.polyfit(calculate_semi_major_axis(particles, positions) ** 3, orbit_no_moon(particles, positions, times) ** 2, 1)
+    abline_values1 = [slope1 * i + intercept1 for i in (calculate_semi_major_axis(particles, positions) ** 3)]
+    pyplot.plot(calculate_semi_major_axis(particles, positions) ** 3, orbit_no_moon(particles, positions, times) ** 2, marker = 'x')
+    pyplot.plot(calculate_semi_major_axis(particles, positions) ** 3, abline_values1, 'g')
+    pyplot.show()
+    print(slope1, intercept1)
+    
+    pyplot.title('Orbital period against semi major axis')
+    pyplot.xlabel('log(a^3)')
+    pyplot.ylabel('log(T^2)')
+    pyplot.plot(np.log(calculate_semi_major_axis(particles, positions) ** 3), np.log(orbit_no_moon(particles, positions, times) ** 2), marker = 'x')
+    pyplot.show()
+    
+    pyplot.title('Orbital period against semi major axis')
+    pyplot.xlabel('log(a)')
+    pyplot.ylabel('log(T)')
+    slope, intercept = np.polyfit(np.log(calculate_semi_major_axis(particles, positions)), np.log(orbit_no_moon(particles, positions, times)), 1)
+    abline_values = [slope * i + intercept for i in np.log(calculate_semi_major_axis(particles, positions))]
+    pyplot.plot(np.log(calculate_semi_major_axis(particles, positions)), np.log(orbit_no_moon(particles, positions, times)), marker = 'x')
+    pyplot.plot(np.log(calculate_semi_major_axis(particles, positions)), abline_values, 'g')
+    pyplot.show()
+    print(slope, intercept)
+    
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
 # not when you just import it from another python file.
