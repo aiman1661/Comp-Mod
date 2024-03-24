@@ -326,7 +326,6 @@ def main():
     # Write observables in output file
     pretty_output(outfileO, energy, particles, positions, times)
     
-    outfileO.close()
     outfile.close()
        
     print("\n If the value of orbital period is 'NaN', then the values of peri/aphelion are not to be trusted. Try 120000 for number of steps (dt = 1), this will give a more accurate result. \n")
@@ -355,40 +354,32 @@ def main():
         pyplot.plot(positions[i, :, 0],  positions[i, :, 1])
     pyplot.show()
     
-    print(calculate_semi_major_axis(particles, positions))
-    print(orbit_no_moon(particles, positions, times))
+    # Plot to verify Kepler's 3rd
+    x = np.log(calculate_semi_major_axis(particles, positions))
+    y = np.log(orbit_no_moon(particles, positions, times))
     
     pyplot.title('Orbital period against semi major axis')
-    pyplot.xlabel('a / AU')
-    pyplot.ylabel('T / AU')
-    pyplot.plot(calculate_semi_major_axis(particles, positions), orbit_no_moon(particles, positions, times), marker = 'x')
-    pyplot.show()
+    pyplot.xlabel('log(a), a in AU')
+    pyplot.ylabel('log(T), T in days')
     
-    pyplot.title('Orbital period squared against semi major axis cubed')
-    pyplot.xlabel('a^3 / AU^3')
-    pyplot.ylabel('T^2 / AU^2')
-    slope1, intercept1 = np.polyfit(calculate_semi_major_axis(particles, positions) ** 3, orbit_no_moon(particles, positions, times) ** 2, 1)
-    abline_values1 = [slope1 * i + intercept1 for i in (calculate_semi_major_axis(particles, positions) ** 3)]
-    pyplot.plot(calculate_semi_major_axis(particles, positions) ** 3, orbit_no_moon(particles, positions, times) ** 2, marker = 'x')
-    pyplot.plot(calculate_semi_major_axis(particles, positions) ** 3, abline_values1, 'g')
-    pyplot.show()
-    print(slope1, intercept1)
+    # Curve fitting
+    slope, intercept = np.polyfit(x, y, 1)
     
-    pyplot.title('Orbital period against semi major axis')
-    pyplot.xlabel('log(a^3)')
-    pyplot.ylabel('log(T^2)')
-    pyplot.plot(np.log(calculate_semi_major_axis(particles, positions) ** 3), np.log(orbit_no_moon(particles, positions, times) ** 2), marker = 'x')
-    pyplot.show()
+    # Calculate best straight line
+    abline_values = [slope * i + intercept for i in x]
     
-    pyplot.title('Orbital period against semi major axis')
-    pyplot.xlabel('log(a)')
-    pyplot.ylabel('log(T)')
-    slope, intercept = np.polyfit(np.log(calculate_semi_major_axis(particles, positions)), np.log(orbit_no_moon(particles, positions, times)), 1)
-    abline_values = [slope * i + intercept for i in np.log(calculate_semi_major_axis(particles, positions))]
-    pyplot.plot(np.log(calculate_semi_major_axis(particles, positions)), np.log(orbit_no_moon(particles, positions, times)), marker = 'x')
-    pyplot.plot(np.log(calculate_semi_major_axis(particles, positions)), abline_values, 'g')
+    # Scatter points without being connected by a line
+    pyplot.scatter(x, y, marker = 'x')
+    
+    # Plot line of best fit
+    pyplot.plot(x, abline_values, 'g')
     pyplot.show()
-    print(slope, intercept)
+    print(f"Slope: {slope}, Y-intercept: {intercept}")
+    
+    outfileO.write('Keplers 3rd law plot \n')
+    outfileO.write(f'Slope: {slope} \n')
+    outfileO.write(f'Y-int: {intercept} \n')
+    outfileO.close()
     
 # This python standard code makes it so that the "main"
 # function is only called when you run the file directly,
