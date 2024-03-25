@@ -394,6 +394,14 @@ def main():
         pyplot.plot(positions[i, :, 0],  positions[i, :, 1])
     pyplot.show()
     
+    # Plot of the orbit of the trajectory of the moon around the earth
+    pyplot.title('Moon Trajectory around Earth')
+    pyplot.xlabel('x / AU')
+    pyplot.ylabel('y / AU')
+    pyplot.plot(positions[4, :, 0] - positions[3, :, 0], positions[4, :, 1] - positions[3, :, 1])
+    pyplot.plot(0, 0, marker = '.', markersize = 40, color = 'green', label = 'Earth')
+    pyplot.show()
+    
     # Plot to verify Kepler's 3rd
     x = np.log(calculate_semi_major_axis(particles, positions))
     y = np.log(orbit_no_moon(particles, positions, times))
