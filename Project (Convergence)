@@ -2,7 +2,7 @@
 Programme to read files containing data from computational experiment and make convergence measurements based
 on observables (perihelion, aphelion, orbital period). In this case, we vary the parameters dt and step number,
 and we measure the convergence in terms of the energy and observables of different planets and 
-display the plots for comparison. Then, we determine the best dt for our experimental simulation.
+display the plots for comparison. Then, we determine the best dt for our simulation.
 
 author: AIMAN MOHD YUZMANIZEIL
 number : s2229553
@@ -44,7 +44,7 @@ def main():
             inputfile = sys.argv[i+2]
             list_of_files.append(inputfile)
     
-    dt = [2, 1, 0.5, 0.25, 0.1]
+    dt = [1, 0.5, 0.1, 0.01, 0.001]
     energy_ratio = []
     particles    = []
     perihelion   = []
