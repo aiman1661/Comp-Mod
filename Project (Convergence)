@@ -79,12 +79,6 @@ def main():
         
         infile.close()
     
-    print(f'{energy_ratio}\n')
-    print(f'{particles}\n')
-    print(f'{perihelion}\n')
-    print(f'{aphelion}\n')
-    print(f'{period}\n')
-    
     outfile.write("\n <energy_relative_inaccuracy> <energy_percentage_inaccuracy> \n ") #formatting output file
     ratio_e      = []
     percentage_e = []
